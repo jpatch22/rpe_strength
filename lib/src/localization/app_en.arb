@@ -1,0 +1,6 @@
+{
+  "appTitle": "rpe_strength",
+  "@appTitle": {
+    "description": "The title of the application"
+  }
+}

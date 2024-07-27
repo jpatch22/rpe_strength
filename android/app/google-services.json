@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "253862892684",
+    "project_id": "rpe-tracker-589bb",
+    "storage_bucket": "rpe-tracker-589bb.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:253862892684:android:d71788eae72042661b97a9",
+        "android_client_info": {
+          "package_name": "com.example.rp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDuo393PuxKdZnpifqywvVmEP8yOdMFnhU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
