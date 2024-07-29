@@ -1,13 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:rpe_strength/src/screens/history_page.dart';
+import 'package:rpe_strength/src/screens/progress_page.dart';
 import './screens/home_page.dart';
 import 'screens/record_page.dart';
-import './screens/school_page.dart';
-import 'sample_feature/sample_item_details_view.dart';
-import 'sample_feature/sample_item_list_view.dart';
 import 'settings/settings_controller.dart';
-import 'settings/settings_view.dart';
 
 class MyApp extends StatefulWidget {
   const MyApp({
@@ -27,8 +23,8 @@ class _MyAppState extends State<MyApp> {
   static final List<Widget> _widgetOptions = <Widget>[
     HomePage(),
     RecordPage(),
-    SchoolPage(),
-    // SettingsView(controller: widget.settingsController)
+    HistoryPage(),
+    ProgressPage(),
   ];
 
   void _onItemTapped(int index) {
@@ -44,9 +40,6 @@ class _MyAppState extends State<MyApp> {
       builder: (BuildContext context, Widget? child) {
         return MaterialApp(
           home: Scaffold(
-            // appBar: AppBar(
-              // title: const Text('Bottom Navigation Bar Example'),
-            // ),
             body: _widgetOptions.elementAt(_selectedIndex),
             bottomNavigationBar: BottomNavigationBar(
               items: const <BottomNavigationBarItem>[
@@ -55,16 +48,21 @@ class _MyAppState extends State<MyApp> {
                   label: 'Home',
                 ),
                 BottomNavigationBarItem(
-                  icon: Icon(Icons.business),
+                  icon: Icon(Icons.fitness_center),
                   label: 'Record',
                 ),
                 BottomNavigationBarItem(
-                  icon: Icon(Icons.school),
-                  label: 'View',
+                  icon: Icon(Icons.history),
+                  label: 'History',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.show_chart),
+                  label: 'Progress',
                 ),
               ],
               currentIndex: _selectedIndex,
               selectedItemColor: Colors.amber[800],
+              unselectedItemColor: Colors.grey,
               onTap: _onItemTapped,
             ),
           ),
