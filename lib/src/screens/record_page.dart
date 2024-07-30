@@ -25,8 +25,8 @@ class _RecordPageState extends State<RecordPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 ElevatedButton(
-                  onPressed: onSaveButtonPress, 
-                  child: const Text("Save Data")
+                  onPressed: onSaveButtonPress,
+                  child: const Text("Save Data"),
                 ),
                 const SizedBox(width: 10),
                 SizedBox(
@@ -36,7 +36,7 @@ class _RecordPageState extends State<RecordPage> {
                       "Option 1",
                       "Option 2",
                       "Option 3",
-                      'Option 4'
+                      'Option 4',
                     ],
                     popupProps: PopupProps.dialog(
                       showSearchBox: true,
@@ -75,8 +75,40 @@ class _RecordPageState extends State<RecordPage> {
                     },
                   ),
                 ),
-                const SizedBox(height: 10)
+                const SizedBox(width: 10),
+                ElevatedButton(
+                  onPressed: addRow,
+                  child: const Text("+"),
+                ),
+                const SizedBox(width: 10),
+                ElevatedButton(
+                  onPressed: removeRow,
+                  child: const Text("-"),
+                ),
               ],
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Table(
+                columnWidths: {
+                  0: FlexColumnWidth(),
+                  1: FlexColumnWidth(),
+                  2: FlexColumnWidth(),
+                  3: FixedColumnWidth(50),
+                  4: FixedColumnWidth(50),
+                },
+                children: [
+                  TableRow(
+                    children: [
+                      Text('Weight'),
+                      Text('Sets'),
+                      Text('Reps'),
+                      SizedBox.shrink(), // Empty cell
+                      SizedBox.shrink(), // Empty cell
+                    ],
+                  ),
+                ],
+              ),
             ),
             ListView.builder(
               physics: NeverScrollableScrollPhysics(),
@@ -99,8 +131,8 @@ class _RecordPageState extends State<RecordPage> {
                           RowItem(
                             key: UniqueKey(),
                             rowData: rows[index],
-                            onAdd: () => addRowAt(index),
-                            onRemove: () => removeRowAt(index),
+                            onAdd: () => addRow(),
+                            onRemove: () => removeRow(),
                           ),
                         ],
                       ),
@@ -138,20 +170,6 @@ class _RecordPageState extends State<RecordPage> {
     if (rows.length > 1) {
       setState(() {
         rows.removeLast();
-      });
-    }
-  }
-
-  void addRowAt(int index) {
-    setState(() {
-      rows.insert(index + 1, RowData());
-    });
-  }
-
-  void removeRowAt(int index) {
-    if (rows.length > 1) {
-      setState(() {
-        rows.removeAt(index);
       });
     }
   }

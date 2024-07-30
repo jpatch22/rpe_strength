@@ -37,7 +37,6 @@ class _RowItemState extends State<RowItem> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
-        Text("Weight"),
         Container(
           width: 100,
           child: TextField(
@@ -48,7 +47,6 @@ class _RowItemState extends State<RowItem> {
             },
           ),
         ),
-        Text("Sets"),
         Container(
           width: 100,
           child: TextField(
@@ -59,7 +57,6 @@ class _RowItemState extends State<RowItem> {
             },
           ),
         ),
-        Text("Reps"),
         Container(
           width: 100,
           child: TextField(
@@ -85,14 +82,6 @@ class _RowItemState extends State<RowItem> {
               child: Text(value),
             );
           }).toList(),
-        ),
-        IconButton(
-          icon: Icon(Icons.add),
-          onPressed: widget.onAdd,
-        ),
-        IconButton(
-          icon: Icon(Icons.remove),
-          onPressed: widget.onRemove,
         ),
       ],
     );
