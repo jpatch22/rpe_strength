@@ -1,6 +1,11 @@
 class RowData {
-  String weight = '';
-  String numSets = '';
-  String numReps = '';
-  String RPE = '5';
+  String weight;
+  String numReps;
+  String RPE;
+
+  RowData({
+    this.weight = '',
+    this.numReps = '',
+    this.RPE = '5',
+  });
 }

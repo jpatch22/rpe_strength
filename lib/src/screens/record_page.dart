@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:dropdown_search/dropdown_search.dart';
+import 'package:rpe_strength/src/database/hive_helper.dart';
 import '../models/row_data.dart';
+import '../models/adv_row_data.dart';
 import '../widgets/row_item.dart';
+import '../widgets/adv_row_item.dart';
 
 class RecordPage extends StatefulWidget {
   @override
@@ -11,6 +14,7 @@ class RecordPage extends StatefulWidget {
 class _RecordPageState extends State<RecordPage> {
   List<RowData> rows = [RowData()];
   String? selectedValue;
+  bool showAdvanced = false; // Toggle for showing advanced row items
 
   @override
   Widget build(BuildContext context) {
@@ -85,6 +89,30 @@ class _RecordPageState extends State<RecordPage> {
                   onPressed: removeRow,
                   child: const Text("-"),
                 ),
+                const SizedBox(width: 10),
+                Switch(
+                  value: showAdvanced,
+                  onChanged: (value) {
+                    setState(() {
+                      showAdvanced = value;
+                      rows = value
+                          ? rows.map((e) => AdvancedRowData(
+                                weight: e.weight,
+                                numReps: e.numReps,
+                                RPE: e.RPE,
+                              )).toList()
+                          : rows.map((e) => RowData(
+                                weight: e.weight,
+                                numReps: e.numReps,
+                                RPE: e.RPE,
+                              )).toList();
+                    });
+                  },
+                  activeColor: Colors.blue,
+                  inactiveThumbColor: Colors.grey,
+                  inactiveTrackColor: Colors.grey[300],
+                ),
+                Text(showAdvanced ? 'Advanced' : 'Basic'),
               ],
             ),
             Padding(
@@ -103,6 +131,8 @@ class _RecordPageState extends State<RecordPage> {
                       Text('Weight'),
                       Text('Sets'),
                       Text('Reps'),
+                      if (showAdvanced) Text('Hype'),
+                      if (showAdvanced) Text('Notes'),
                       SizedBox.shrink(), // Empty cell
                       SizedBox.shrink(), // Empty cell
                     ],
@@ -123,17 +153,24 @@ class _RecordPageState extends State<RecordPage> {
                       1: FlexColumnWidth(),
                       2: FlexColumnWidth(),
                       3: FixedColumnWidth(50),
-                      4: FixedColumnWidth(50),
+                       4: FixedColumnWidth(50),
                     },
                     children: [
                       TableRow(
                         children: [
-                          RowItem(
-                            key: UniqueKey(),
-                            rowData: rows[index],
-                            onAdd: () => addRow(),
-                            onRemove: () => removeRow(),
-                          ),
+                          showAdvanced
+                              ? AdvancedRowItem(
+                                  key: UniqueKey(),
+                                  rowData: rows[index] as AdvancedRowData,
+                                  onAdd: addRow,
+                                  onRemove: removeRow,
+                                )
+                              : RowItem(
+                                  key: UniqueKey(),
+                                  rowData: rows[index],
+                                  onAdd: addRow,
+                                  onRemove: removeRow,
+                                ),
                         ],
                       ),
                     ],
@@ -148,21 +185,25 @@ class _RecordPageState extends State<RecordPage> {
   }
 
   void onSaveButtonPress() {
-    // Print the current data
-    for (var row in rows) {
-      print(row.toString());
+    if (showAdvanced) {
+      HiveHelper.saveAdvancedRowItemList(rows.cast<AdvancedRowData>());
+    } else {
+      HiveHelper.saveBaseRowItemList(rows);
     }
 
-    // Reset rows to the base configuration
     setState(() {
-      rows = [RowData()];
+      rows = showAdvanced
+          ? [AdvancedRowData(weight: '', numReps: '', RPE: '5', hype: 'Moderate')]
+          : [RowData()];
       selectedValue = null; // Reset the selected value of the dropdown
     });
   }
 
   void addRow() {
     setState(() {
-      rows.add(RowData());
+      rows.add(showAdvanced
+          ? AdvancedRowData(weight: '', numReps: '', RPE: '5', hype: 'Moderate')
+          : RowData());
     });
   }
 
