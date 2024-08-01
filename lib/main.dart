@@ -1,20 +1,16 @@
 import 'package:flutter/material.dart';
-
+import 'package:provider/provider.dart'; // Make sure to import the provider package
+import 'package:rpe_strength/src/database/hive_provider.dart';
 import 'src/app.dart';
 import 'src/settings/settings_controller.dart';
 import 'src/settings/settings_service.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'src/database/models/workout_data_item.dart';
-import 'src/database/hive_helper.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
-
   Hive.registerAdapter(WorkoutDataItemAdapter());
-
-  await Hive.openBox<WorkoutDataItem>('workoutDataBox');
-  HiveHelper.initializeExerciseNames();
 
   // Initialize Firebase
   // try {
@@ -37,5 +33,13 @@ void main() async {
   // Run the app and pass in the SettingsController. The app listens to the
   // SettingsController for changes, then passes it further down to the
   // SettingsView.
-  runApp(MyApp(settingsController: settingsController));
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) {
+        final hiveProvider = HiveProvider();
+        return hiveProvider;
+      },
+      child: MyApp(settingsController: settingsController),
+    ),
+  );
 }

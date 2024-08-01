@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:fuzzy/fuzzy.dart';
-import '../database/hive_helper.dart';
+import 'package:rpe_strength/src/database/hive_provider.dart';
 
 class CustomDropdownSearch extends StatefulWidget {
   final List<String> items;
@@ -67,7 +68,7 @@ class _CustomDropdownSearchState extends State<CustomDropdownSearch> {
       _isLoading = true;
     });
     try {
-      final options = await HiveHelper.getExerciseNames();
+      final options = Provider.of<HiveProvider>(context, listen: false).exerciseNames;
       setState(() {
         _filteredItems = options;
         _searchController.clear();
@@ -82,12 +83,14 @@ class _CustomDropdownSearchState extends State<CustomDropdownSearch> {
   }
 
   Future<void> _addExerciseName(String name) async {
-    await HiveHelper.addExerciseName(name);
+    final hiveProvider = Provider.of<HiveProvider>(context, listen: false);
+    await hiveProvider.addExerciseName(name);
     await _loadExerciseNames();
   }
 
   Future<void> _removeExerciseName(String name) async {
-    await HiveHelper.deleteExerciseName(name);
+    final hiveProvider = Provider.of<HiveProvider>(context, listen: false);
+    await hiveProvider.deleteExerciseName(name);
     await _loadExerciseNames();
   }
 

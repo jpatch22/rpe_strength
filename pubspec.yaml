@@ -24,6 +24,8 @@ dependencies:
   hive: ^2.0.5
   hive_flutter: ^1.1.0
   fuzzy: ^0.5.1
+  syncfusion_flutter_charts: ^20.2.46
+  provider: ^6.0.0
 
 dev_dependencies:
   flutter_test:
