@@ -81,11 +81,22 @@ class _CustomDropdownSearchState extends State<CustomDropdownSearch> {
     }
   }
 
+  Future<void> _addExerciseName(String name) async {
+    await HiveHelper.addExerciseName(name);
+    await _loadExerciseNames();
+  }
+
+  Future<void> _removeExerciseName(String name) async {
+    await HiveHelper.deleteExerciseName(name);
+    await _loadExerciseNames();
+  }
+
   void _showPopup() async {
     await _loadExerciseNames();
     final selectedItem = await showDialog<String>(
       context: context,
       builder: (context) {
+        String newExerciseName = '';
         return Dialog(
           child: _isLoading
               ? Center(child: CircularProgressIndicator())
@@ -93,13 +104,57 @@ class _CustomDropdownSearchState extends State<CustomDropdownSearch> {
                   children: [
                     Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: TextField(
-                        controller: _searchController,
-                        decoration: InputDecoration(
-                          labelText: "Search",
-                          hintText: "Search for an option",
-                          border: OutlineInputBorder(),
-                        ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: _searchController,
+                              decoration: InputDecoration(
+                                labelText: "Search",
+                                hintText: "Search for an option",
+                                border: OutlineInputBorder(),
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.add),
+                            onPressed: () async {
+                              newExerciseName = await showDialog<String>(
+                                context: context,
+                                builder: (context) {
+                                  return AlertDialog(
+                                    title: Text("Add Exercise"),
+                                    content: TextField(
+                                      onChanged: (value) {
+                                        newExerciseName = value;
+                                      },
+                                      decoration: InputDecoration(
+                                        hintText: "Exercise name",
+                                      ),
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: Text("Cancel"),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.of(context).pop(newExerciseName);
+                                        },
+                                        child: Text("Add"),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              ) ?? '';
+                              if (newExerciseName.isNotEmpty) {
+                                await _addExerciseName(newExerciseName);
+                              }
+                            },
+                          ),
+                        ],
                       ),
                     ),
                     Expanded(
@@ -109,6 +164,12 @@ class _CustomDropdownSearchState extends State<CustomDropdownSearch> {
                           final item = _filteredItems[index];
                           return ListTile(
                             title: Text(item),
+                            trailing: IconButton(
+                              icon: Icon(Icons.remove),
+                              onPressed: () async {
+                                await _removeExerciseName(item);
+                              },
+                            ),
                             onTap: () {
                               Navigator.of(context).pop(item);
                             },
