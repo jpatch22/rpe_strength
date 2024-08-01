@@ -23,13 +23,15 @@ class WorkoutDataItemAdapter extends TypeAdapter<WorkoutDataItem> {
       numSets: fields[3] as int,
       hype: fields[4] as int,
       notes: fields[5] as String,
+      timestamp: fields[6] as DateTime?,
+      exercise: fields[7] as String,
     );
   }
 
   @override
   void write(BinaryWriter writer, WorkoutDataItem obj) {
     writer
-      ..writeByte(6)
+      ..writeByte(8)
       ..writeByte(0)
       ..write(obj.weight)
       ..writeByte(1)
@@ -41,7 +43,11 @@ class WorkoutDataItemAdapter extends TypeAdapter<WorkoutDataItem> {
       ..writeByte(4)
       ..write(obj.hype)
       ..writeByte(5)
-      ..write(obj.notes);
+      ..write(obj.notes)
+      ..writeByte(6)
+      ..write(obj.timestamp)
+      ..writeByte(7)
+      ..write(obj.exercise);
   }
 
   @override

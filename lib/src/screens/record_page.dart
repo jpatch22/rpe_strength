@@ -13,7 +13,7 @@ class RecordPage extends StatefulWidget {
 
 class _RecordPageState extends State<RecordPage> {
   List<RowData> rows = [RowData()];
-  String? selectedValue;
+  String? selectedExercise;
   bool showAdvanced = false; // Toggle for showing advanced row items
 
   @override
@@ -64,10 +64,10 @@ class _RecordPageState extends State<RecordPage> {
                     ),
                     onChanged: (value) {
                       setState(() {
-                        selectedValue = value;
+                        selectedExercise = value;
                       });
                     },
-                    selectedItem: selectedValue,
+                    selectedItem: selectedExercise,
                     clearButtonProps: ClearButtonProps(
                       isVisible: true,
                     ),
@@ -186,23 +186,23 @@ class _RecordPageState extends State<RecordPage> {
 
   void onSaveButtonPress() {
     if (showAdvanced) {
-      HiveHelper.saveAdvancedRowItemList(rows.cast<AdvancedRowData>());
+      HiveHelper.saveAdvancedRowItemList(rows.cast<AdvancedRowData>(), selectedExercise ?? "");
     } else {
-      HiveHelper.saveBaseRowItemList(rows);
+      HiveHelper.saveBaseRowItemList(rows, selectedExercise ?? "");
     }
 
     setState(() {
       rows = showAdvanced
-          ? [AdvancedRowData(weight: '', numReps: '', RPE: '5', hype: 'Moderate')]
+          ? [AdvancedRowData(weight: '', numReps: '', RPE: '5')]
           : [RowData()];
-      selectedValue = null; // Reset the selected value of the dropdown
+      selectedExercise = null; // Reset the selected value of the dropdown
     });
   }
 
   void addRow() {
     setState(() {
       rows.add(showAdvanced
-          ? AdvancedRowData(weight: '', numReps: '', RPE: '5', hype: 'Moderate')
+          ? AdvancedRowData(weight: '', numReps: '', RPE: '5')
           : RowData());
     });
   }

@@ -22,6 +22,12 @@ class WorkoutDataItem extends HiveObject {
   @HiveField(5)
   String notes;
 
+  @HiveField(6)
+  DateTime? timestamp;
+
+  @HiveField(7)
+  String exercise;
+
   WorkoutDataItem({
     this.weight = 0.0,
     this.numReps = 0,
@@ -29,5 +35,7 @@ class WorkoutDataItem extends HiveObject {
     this.numSets = 1,
     this.hype = 2, // Moderate by default
     this.notes = '',
+    this.timestamp, 
+    this.exercise = '',
   });
 }

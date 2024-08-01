@@ -20,7 +20,6 @@ class RowItem extends StatefulWidget {
 class _RowItemState extends State<RowItem> {
   late TextEditingController weight;
   late TextEditingController reps;
-  late TextEditingController sets;
   late String rpe;
 
   @override
@@ -80,7 +79,6 @@ class _RowItemState extends State<RowItem> {
   void dispose() {
     weight.dispose();
     reps.dispose();
-    sets.dispose();
     super.dispose();
   }
 }

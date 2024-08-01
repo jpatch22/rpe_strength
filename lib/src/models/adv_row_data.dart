@@ -13,8 +13,8 @@ class AdvancedRowData extends RowData {
     this.hype = 'Moderate',
     this.notes = '',
   }) : super(
-          weight: weight,
-          numReps: numReps,
-          RPE: RPE,
+          weight: weight = '',
+          numReps: numReps = '',
+          RPE: RPE = '5',
         );
 }
