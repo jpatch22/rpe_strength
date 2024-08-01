@@ -5,6 +5,7 @@ import 'src/settings/settings_controller.dart';
 import 'src/settings/settings_service.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'src/database/models/workout_data_item.dart';
+import 'src/database/hive_helper.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -13,6 +14,7 @@ void main() async {
   Hive.registerAdapter(WorkoutDataItemAdapter());
 
   await Hive.openBox<WorkoutDataItem>('workoutDataBox');
+  HiveHelper.initializeExerciseNames();
 
   // Initialize Firebase
   // try {

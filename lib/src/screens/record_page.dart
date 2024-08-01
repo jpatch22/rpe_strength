@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:dropdown_search/dropdown_search.dart';
+import '../widgets/custom_dropdown_search.dart';
 import 'package:rpe_strength/src/database/hive_helper.dart';
 import '../models/row_data.dart';
 import '../models/adv_row_data.dart';
@@ -15,6 +15,30 @@ class _RecordPageState extends State<RecordPage> {
   List<RowData> rows = [RowData()];
   String? selectedExercise;
   bool showAdvanced = false; // Toggle for showing advanced row items
+  List<String> exerciseOptions = []; // Placeholder for your exercise options
+
+  @override
+  void initState() {
+    super.initState();
+    _loadExerciseNames();
+  }
+
+  Future<void> _loadExerciseNames() async {
+    try {
+      final options = await HiveHelper.getExerciseNames();
+      setState(() {
+        exerciseOptions = options;
+      });
+    } catch (e) {
+      print('Error loading exercise names: $e');
+    }
+  }
+
+  void _onDropdownChanged(String? value) {
+    setState(() {
+      selectedExercise = value;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,49 +58,13 @@ class _RecordPageState extends State<RecordPage> {
                 ),
                 const SizedBox(width: 10),
                 SizedBox(
-                  width: 200, // Adjust the width as needed
-                  child: DropdownSearch<String>(
-                    items: [
-                      "Option 1",
-                      "Option 2",
-                      "Option 3",
-                      'Option 4',
-                    ],
-                    popupProps: PopupProps.dialog(
-                      showSearchBox: true,
-                      searchFieldProps: TextFieldProps(
-                        decoration: InputDecoration(
-                          labelText: "Search",
-                          hintText: "Search for an option",
-                        ),
-                      ),
-                      itemBuilder: (context, item, isSelected) {
-                        return ListTile(
-                          title: Text(item),
-                        );
-                      },
-                    ),
-                    dropdownDecoratorProps: DropDownDecoratorProps(
-                      dropdownSearchDecoration: InputDecoration(
-                        labelText: "Select Option",
-                        hintText: "Search and select an option",
-                      ),
-                    ),
-                    onChanged: (value) {
-                      setState(() {
-                        selectedExercise = value;
-                      });
-                    },
+                  width: 300,
+                  child: CustomDropdownSearch(
+                    items: exerciseOptions,
+                    onChanged: _onDropdownChanged,
                     selectedItem: selectedExercise,
-                    clearButtonProps: ClearButtonProps(
-                      isVisible: true,
-                    ),
-                    filterFn: (item, filter) {
-                      if (filter == null || filter.isEmpty) {
-                        return true;
-                      }
-                      return item.toLowerCase().contains(filter.toLowerCase());
-                    },
+                    labelText: "Select Exercise",
+                    hintText: "Search and select an exercise",
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -153,7 +141,7 @@ class _RecordPageState extends State<RecordPage> {
                       1: FlexColumnWidth(),
                       2: FlexColumnWidth(),
                       3: FixedColumnWidth(50),
-                       4: FixedColumnWidth(50),
+                      4: FixedColumnWidth(50),
                     },
                     children: [
                       TableRow(
