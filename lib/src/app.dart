@@ -37,10 +37,13 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: widget.settingsController,
+    return AnimatedBuilder(
+      animation: widget.settingsController,
       builder: (BuildContext context, Widget? child) {
         return MaterialApp(
+          theme: ThemeData.light(),
+          darkTheme: ThemeData.dark(),
+          themeMode: widget.settingsController.themeMode,
           home: Scaffold(
             body: _widgetOptions.elementAt(_selectedIndex),
             bottomNavigationBar: BottomNavigationBar(
@@ -64,7 +67,7 @@ class _MyAppState extends State<MyApp> {
                 BottomNavigationBarItem(
                   icon: Icon(Icons.assessment),
                   label: "Predict"
-                  )
+                ),
               ],
               currentIndex: _selectedIndex,
               selectedItemColor: Colors.amber[800],

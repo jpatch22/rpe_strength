@@ -206,9 +206,9 @@ class _CustomDropdownSearchState extends State<CustomDropdownSearch> {
           children: [
             Text(
               widget.selectedItem ?? widget.hintText,
-              style: TextStyle(
-                color: widget.selectedItem == null ? Colors.grey : Colors.black,
-              ),
+              style: widget.selectedItem == null
+                  ? Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.grey)
+                  : Theme.of(context).textTheme.bodyLarge,
             ),
             Icon(Icons.arrow_drop_down),
           ],

@@ -184,9 +184,12 @@ class _CustomDropdownSearchBaseState extends State<CustomDropdownSearchBase> {
                 _selectedItems.isEmpty
                     ? widget.hintText
                     : _selectedItems.join(', '),
-                style: TextStyle(
-                  color: _selectedItems.isEmpty ? Colors.grey : Colors.black,
-                ),
+                style: _selectedItems.isEmpty
+                    ? Theme.of(context)
+                        .textTheme
+                        .bodyLarge
+                        ?.copyWith(color: Colors.grey)
+                    : Theme.of(context).textTheme.bodyLarge,
               ),
             ),
             Icon(Icons.arrow_drop_down),

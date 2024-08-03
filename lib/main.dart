@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart'; // Make sure to import the provider package
+import 'package:provider/provider.dart';
 import 'package:rpe_strength/src/database/hive_provider.dart';
 import 'package:rpe_strength/src/models/adv_row_data.dart';
 import 'package:rpe_strength/src/models/row_data.dart';
@@ -16,12 +16,12 @@ void main() async {
 
   // Initialize Firebase
   // try {
-    // await Firebase.initializeApp(
-      // options: DefaultFirebaseOptions.currentPlatform,
-    // );
-    // print("successful initialization");
+  //   await Firebase.initializeApp(
+  //     options: DefaultFirebaseOptions.currentPlatform,
+  //   );
+  //   print("successful initialization");
   // } catch (e) {
-    // print("Error initializing firebase: $e");
+  //   print("Error initializing firebase: $e");
   // }
   
   // Set up the SettingsController, which will glue user settings to multiple
@@ -36,11 +36,15 @@ void main() async {
   // SettingsController for changes, then passes it further down to the
   // SettingsView.
   runApp(
-    ChangeNotifierProvider(
-      create: (_) {
-        final hiveProvider = HiveProvider();
-        return hiveProvider;
-      },
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) => HiveProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => settingsController,
+        ),
+      ],
       child: MyApp(settingsController: settingsController),
     ),
   );
