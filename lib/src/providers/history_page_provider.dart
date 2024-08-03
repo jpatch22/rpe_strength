@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import '../database/hive_provider.dart';
 import '../database/models/workout_data_item.dart';
 
@@ -8,7 +7,14 @@ class HistoryPageProvider extends ChangeNotifier {
   List<String> selectedExercises = [];
 
   HistoryPageProvider(this.hiveProvider) {
-    hiveProvider.fetchExerciseNames();
+    _initializeProvider();
+  }
+
+  void _initializeProvider() async {
+    await hiveProvider.fetchExerciseNames();
+    selectedExercises = List.from(hiveProvider.exerciseNames);
+    print("selected Ex: $selectedExercises");
+    notifyListeners();
   }
 
   void onDropdownChanged(List<String> selectedItems) {
@@ -32,8 +38,8 @@ class HistoryPageProvider extends ChangeNotifier {
             ),
             TextButton(
               child: Text('Delete'),
-              onPressed: () {
-                hiveProvider.deleteWorkoutDataItem(item);
+              onPressed: () async {
+                await hiveProvider.deleteWorkoutDataItem(item);
                 Navigator.of(context).pop();
                 notifyListeners(); // Notify listeners after deletion
               },

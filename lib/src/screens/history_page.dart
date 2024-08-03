@@ -3,7 +3,6 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:rpe_strength/src/database/models/workout_data_item.dart';
 import 'package:rpe_strength/src/models/hype_level.dart';
-import '../database/hive_provider.dart';
 import '../providers/advanced_mode_provider.dart';
 import '../providers/history_page_provider.dart';
 import '../widgets/custom_dropdown_search_base.dart';
@@ -37,8 +36,6 @@ class HistoryPage extends StatelessWidget {
                 padding: const EdgeInsets.all(8.0),
                 child: CustomDropdownSearchBase(
                   items: historyPageProvider.hiveProvider.exerciseNames,
-                  onChanged: historyPageProvider.onDropdownChanged,
-                  selectedItems: historyPageProvider.selectedExercises,
                   labelText: "Filter Exercises",
                   hintText: "Select exercises to filter",
                 ),

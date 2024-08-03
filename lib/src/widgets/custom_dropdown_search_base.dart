@@ -2,18 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fuzzy/fuzzy.dart';
 import 'package:rpe_strength/src/database/hive_provider.dart';
+import '../providers/history_page_provider.dart';
 
 class CustomDropdownSearchBase extends StatefulWidget {
   final List<String> items;
-  final List<String> selectedItems;
-  final void Function(List<String>) onChanged;
   final String labelText;
   final String hintText;
 
   CustomDropdownSearchBase({
     required this.items,
-    required this.onChanged,
-    required this.selectedItems,
     this.labelText = "",
     this.hintText = "Search and select options",
   });
@@ -26,7 +23,6 @@ class _CustomDropdownSearchBaseState extends State<CustomDropdownSearchBase> {
   final TextEditingController _searchController = TextEditingController();
   List<String> _filteredItems = [];
   bool _isLoading = false;
-  late List<String> _selectedItems;
 
   @override
   void initState() {
@@ -34,7 +30,6 @@ class _CustomDropdownSearchBaseState extends State<CustomDropdownSearchBase> {
     final hiveProvider = Provider.of<HiveProvider>(context, listen: false);
     hiveProvider.fetchExerciseNames();
     _filteredItems = widget.items;
-    _selectedItems = List.from(widget.selectedItems);
     _searchController.addListener(_filterItems);
   }
 
@@ -114,7 +109,7 @@ class _CustomDropdownSearchBaseState extends State<CustomDropdownSearchBase> {
                             itemCount: _filteredItems.length,
                             itemBuilder: (context, index) {
                               final item = _filteredItems[index];
-                              final isSelected = _selectedItems.contains(item);
+                              final isSelected = context.read<HistoryPageProvider>().selectedExercises.contains(item);
                               return ListTile(
                                 title: Text(item),
                                 trailing: Checkbox(
@@ -122,20 +117,22 @@ class _CustomDropdownSearchBaseState extends State<CustomDropdownSearchBase> {
                                   onChanged: (bool? value) {
                                     setState(() {
                                       if (value == true) {
-                                        _selectedItems.add(item);
+                                        context.read<HistoryPageProvider>().selectedExercises.add(item);
                                       } else {
-                                        _selectedItems.remove(item);
+                                        context.read<HistoryPageProvider>().selectedExercises.remove(item);
                                       }
+                                      context.read<HistoryPageProvider>().onDropdownChanged(context.read<HistoryPageProvider>().selectedExercises);
                                     });
                                   },
                                 ),
                                 onTap: () {
                                   setState(() {
                                     if (isSelected) {
-                                      _selectedItems.remove(item);
+                                      context.read<HistoryPageProvider>().selectedExercises.remove(item);
                                     } else {
-                                      _selectedItems.add(item);
+                                      context.read<HistoryPageProvider>().selectedExercises.add(item);
                                     }
+                                    context.read<HistoryPageProvider>().onDropdownChanged(context.read<HistoryPageProvider>().selectedExercises);
                                   });
                                 },
                               );
@@ -146,7 +143,7 @@ class _CustomDropdownSearchBaseState extends State<CustomDropdownSearchBase> {
                           padding: const EdgeInsets.all(8.0),
                           child: ElevatedButton(
                             onPressed: () {
-                              Navigator.of(context).pop(_selectedItems);
+                              Navigator.of(context).pop(context.read<HistoryPageProvider>().selectedExercises);
                             },
                             child: Text("Done"),
                           ),
@@ -159,10 +156,7 @@ class _CustomDropdownSearchBaseState extends State<CustomDropdownSearchBase> {
       },
     );
     if (selectedItems != null) {
-      setState(() {
-        _selectedItems = selectedItems;
-      });
-      widget.onChanged(_selectedItems);
+      context.read<HistoryPageProvider>().onDropdownChanged(selectedItems);
     }
   }
 
@@ -180,16 +174,20 @@ class _CustomDropdownSearchBaseState extends State<CustomDropdownSearchBase> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Expanded(
-              child: Text(
-                _selectedItems.isEmpty
-                    ? widget.hintText
-                    : _selectedItems.join(', '),
-                style: _selectedItems.isEmpty
-                    ? Theme.of(context)
-                        .textTheme
-                        .bodyLarge
-                        ?.copyWith(color: Colors.grey)
-                    : Theme.of(context).textTheme.bodyLarge,
+              child: Consumer<HistoryPageProvider>(
+                builder: (context, historyPageProvider, child) {
+                  return Text(
+                    historyPageProvider.selectedExercises.isEmpty
+                        ? widget.hintText
+                        : historyPageProvider.selectedExercises.join(', '),
+                    style: historyPageProvider.selectedExercises.isEmpty
+                        ? Theme.of(context)
+                            .textTheme
+                            .bodyLarge
+                            ?.copyWith(color: Colors.grey)
+                        : Theme.of(context).textTheme.bodyLarge,
+                  );
+                },
               ),
             ),
             Icon(Icons.arrow_drop_down),
