@@ -14,6 +14,7 @@ class PredictPage extends StatefulWidget {
 class _PredictPageState extends State<PredictPage> {
   String? selectedExercise;
   String? selectedMethod = 'Epley'; // Default to 'Epley'
+  List<String> calculationMethods = ['Epley', 'Brzycki', 'Lombardi', 'O\'Conner', 'Wathan'];
   String rpe = '';
   String reps = '';
   double estimatedWeight = 0;
@@ -86,13 +87,17 @@ class _PredictPageState extends State<PredictPage> {
                     ),
                     const SizedBox(width: 10),
                     SizedBox(
-                      width: 300,
-                      child: CustomDropdownSearch(
-                        items: ['Epley', 'Brzycki', 'Lombardi', 'O\'Conner', 'Wathan', 'RPE-based'],
+                      width: 300.0,
+                      child: DropdownButton<String>(
+                        value: selectedMethod,
                         onChanged: _onMethodChanged,
-                        selectedItem: selectedMethod,
-                        labelText: "",
-                        hintText: "Select a method",
+                        items: calculationMethods.map((String method) {
+                          return DropdownMenuItem<String>(
+                            value: method,
+                            child: Text(method),
+                          );
+                        }).toList(),
+                        isExpanded: true,
                       ),
                     ),
                   ],

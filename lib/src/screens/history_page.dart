@@ -28,6 +28,33 @@ class _HistoryPageState extends State<HistoryPage> {
     });
   }
 
+  void _deleteItem(BuildContext context, WorkoutDataItem item, HiveProvider hiveProvider) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Delete Confirmation'),
+          content: Text('Are you sure you want to delete this item?'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('Delete'),
+              onPressed: () {
+                hiveProvider.deleteWorkoutDataItem(item);
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -92,7 +119,16 @@ class _HistoryPageState extends State<HistoryPage> {
                           subtitle: showAdvanced
                               ? Text('Reps: ${item.numReps}, Weight: ${item.weight}, RPE: ${item.RPE}, Sets: ${item.numSets}, Hype: ${HypeLevel.fromOrdinal(item.hype).name}, Notes: ${item.notes}')
                               : Text('Reps: ${item.numReps}, Weight: ${item.weight}, RPE: ${item.RPE}'),
-                          trailing: Text('Time: ${item.timestamp?.toLocal().toString().substring(0, 16) ?? "No timestamp"}'),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text('Time: ${item.timestamp?.toLocal().toString().substring(0, 16) ?? "No timestamp"}'),
+                              IconButton(
+                                icon: Icon(Icons.remove_circle, color: Colors.red),
+                                onPressed: () => _deleteItem(context, item, hiveProvider),
+                              ),
+                            ],
+                          ),
                         );
                       },
                     );

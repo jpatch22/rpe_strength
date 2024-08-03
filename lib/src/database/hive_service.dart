@@ -1,4 +1,5 @@
 import 'package:hive/hive.dart';
+import 'package:rpe_strength/src/Utils/Util.dart';
 import 'package:rpe_strength/src/database/models/workout_data_item.dart';
 import 'package:rpe_strength/src/models/adv_row_data.dart';
 import 'package:rpe_strength/src/models/hype_level.dart';
@@ -42,6 +43,7 @@ class HiveService {
         if (data.numReps == "" || data.weight == "" || exercise == "") {
           continue;
         }
+        DateTime? attemptParse = Util.parseTime(data.timestamp ?? "");
         var item = WorkoutDataItem(
           weight: double.tryParse(data.weight) ?? 0,
           numReps: int.tryParse(data.numReps) ?? 0,
@@ -49,7 +51,7 @@ class HiveService {
           numSets: 1,
           hype: HypeLevel.Moderate.ordinal,
           notes: "",
-          timestamp: nowSave,
+          timestamp: attemptParse ?? nowSave,
           exercise: exercise,
         );
         converted.add(item);
@@ -84,6 +86,7 @@ class HiveService {
         if (data.numReps == "" || data.weight == "" || exercise == "") {
           continue;
         }
+        DateTime? attemptParse = Util.parseTime(data.timestamp ?? "");
         var item = WorkoutDataItem(
           weight: double.tryParse(data.weight) ?? 0,
           numReps: int.tryParse(data.numReps) ?? 0,
@@ -91,7 +94,7 @@ class HiveService {
           numSets: int.tryParse(data.numSets) ?? 0,
           hype: HypeLevel.fromString(data.hype).ordinal,
           notes: data.notes,
-          timestamp: saveTime,
+          timestamp: attemptParse ?? saveTime,
           exercise: exercise,
         );
         converted.add(item);
@@ -115,6 +118,24 @@ class HiveService {
     } catch (e) {
       print("Error fetching workout items: $e");
       return [];
+    }
+  }
+
+  Future<void> deleteWorkoutDataItem(WorkoutDataItem item) async {
+    try {
+      if (_workoutItemBox == null) return;
+      final key = _workoutItemBox!.keys.firstWhere(
+        (k) => _workoutItemBox!.get(k) == item,
+        orElse: () => null,
+      );
+      if (key != null) {
+        await _workoutItemBox!.delete(key);
+        print('Deleted WorkoutDataItem: $item');
+      } else {
+        print('WorkoutDataItem not found: $item');
+      }
+    } catch (e) {
+      print('Error deleting workout data item: $e');
     }
   }
 

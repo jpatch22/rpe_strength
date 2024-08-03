@@ -5,12 +5,14 @@ class AdvancedRowItem extends StatefulWidget {
   final AdvancedRowData rowData;
   final VoidCallback onAdd;
   final VoidCallback onRemove;
+  final bool editTime;
 
   AdvancedRowItem({
     Key? key,
     required this.rowData,
     required this.onAdd,
     required this.onRemove,
+    required this.editTime,
   }) : super(key: key);
 
   @override
@@ -22,6 +24,7 @@ class _AdvancedRowItemState extends State<AdvancedRowItem> {
   late TextEditingController reps;
   late TextEditingController sets;
   late TextEditingController notes;
+  late TextEditingController timeController;
   late String rpe;
   late String hype;
 
@@ -34,6 +37,7 @@ class _AdvancedRowItemState extends State<AdvancedRowItem> {
     sets = TextEditingController(text: widget.rowData.numSets);
     hype = widget.rowData.hype;
     notes = TextEditingController(text: widget.rowData.notes);
+    timeController = TextEditingController(text: widget.rowData.timestamp ?? "");
   }
 
   @override
@@ -115,6 +119,17 @@ class _AdvancedRowItemState extends State<AdvancedRowItem> {
             ),
           ),
         ),
+        if (widget.editTime)
+          Container(
+            width: 150,
+            child: TextField(
+              controller: timeController,
+              decoration: InputDecoration(labelText: 'Time (DDMMYY)'),
+              onChanged: (value) {
+                widget.rowData.timestamp = value;
+              },
+            ),
+          ),
       ],
     );
   }
@@ -125,6 +140,7 @@ class _AdvancedRowItemState extends State<AdvancedRowItem> {
     reps.dispose();
     sets.dispose();
     notes.dispose();
+    timeController.dispose();
     super.dispose();
   }
 }

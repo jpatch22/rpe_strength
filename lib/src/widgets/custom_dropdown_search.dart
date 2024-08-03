@@ -24,32 +24,32 @@ class CustomDropdownSearch extends StatefulWidget {
 
 class _CustomDropdownSearchState extends State<CustomDropdownSearch> {
   final TextEditingController _searchController = TextEditingController();
-  List<String> _filteredItems = [];
+  final ValueNotifier<List<String>> _filteredItemsNotifier = ValueNotifier<List<String>>([]);
   bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    _filteredItems = widget.items;
     _searchController.addListener(_filterItems);
+    _filteredItemsNotifier.value = widget.items; // Initialize with the original list of items
+    _loadExerciseNames();
   }
 
   @override
   void dispose() {
     _searchController.removeListener(_filterItems);
     _searchController.dispose();
+    _filteredItemsNotifier.dispose();
     super.dispose();
   }
 
   void _filterItems() {
-    final filter = _searchController.text;
+    final filter = _searchController.text.toLowerCase();
     if (filter.isEmpty) {
-      setState(() {
-        _filteredItems = widget.items;
-      });
+      _filteredItemsNotifier.value = widget.items; // Reset to the original list of items
     } else {
       final fuse = Fuzzy<String>(
-        widget.items,
+        widget.items, // Use the original list of items for searching
         options: FuzzyOptions(
           findAllMatches: true,
           tokenize: true,
@@ -57,9 +57,7 @@ class _CustomDropdownSearchState extends State<CustomDropdownSearch> {
         ),
       );
       final result = fuse.search(filter);
-      setState(() {
-        _filteredItems = result.map<String>((r) => r.item).toList();
-      });
+      _filteredItemsNotifier.value = result.map<String>((r) => r.item).toList();
     }
   }
 
@@ -69,10 +67,8 @@ class _CustomDropdownSearchState extends State<CustomDropdownSearch> {
     });
     try {
       final options = Provider.of<HiveProvider>(context, listen: false).exerciseNames;
-      setState(() {
-        _filteredItems = options;
-        _searchController.clear();
-      });
+      _filteredItemsNotifier.value = options;
+      _searchController.clear();
     } catch (e) {
       print('Error loading exercise names: $e');
     } finally {
@@ -161,20 +157,25 @@ class _CustomDropdownSearchState extends State<CustomDropdownSearch> {
                       ),
                     ),
                     Expanded(
-                      child: ListView.builder(
-                        itemCount: _filteredItems.length,
-                        itemBuilder: (context, index) {
-                          final item = _filteredItems[index];
-                          return ListTile(
-                            title: Text(item),
-                            trailing: IconButton(
-                              icon: Icon(Icons.remove),
-                              onPressed: () async {
-                                await _removeExerciseName(item);
-                              },
-                            ),
-                            onTap: () {
-                              Navigator.of(context).pop(item);
+                      child: ValueListenableBuilder<List<String>>(
+                        valueListenable: _filteredItemsNotifier,
+                        builder: (context, filteredItems, child) {
+                          return ListView.builder(
+                            itemCount: filteredItems.length,
+                            itemBuilder: (context, index) {
+                              final item = filteredItems[index];
+                              return ListTile(
+                                title: Text(item),
+                                trailing: IconButton(
+                                  icon: Icon(Icons.remove),
+                                  onPressed: () async {
+                                    await _removeExerciseName(item);
+                                  },
+                                ),
+                                onTap: () {
+                                  Navigator.of(context).pop(item);
+                                },
+                              );
                             },
                           );
                         },

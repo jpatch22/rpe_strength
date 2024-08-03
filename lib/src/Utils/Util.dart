@@ -4,6 +4,22 @@ import 'dart:math';
 class Util {
   Util._();
 
+  static DateTime? parseTime(String ddmmyy) {
+    if (ddmmyy.length < 6) {
+      return null;
+    }
+    int? day = int.tryParse(ddmmyy.substring(0, 2));
+    int? month = int.tryParse(ddmmyy.substring(2, 4));
+    int? year = int.tryParse(ddmmyy.substring(4));
+    
+    if (day == null || month == null || day > 31 || month > 12 || year == null) {
+      return null;
+    } else {
+      return DateTime(year, month, day);
+    }
+  }
+
+
   static double calculateWeight(WorkoutDataItem item, double e1RM, String selectedMethod) {
     double modNumReps = (item.numReps + 10 - (double.tryParse(item.RPE) ?? 11));
     switch (selectedMethod) {

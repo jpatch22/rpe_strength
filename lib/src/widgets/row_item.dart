@@ -5,12 +5,14 @@ class RowItem extends StatefulWidget {
   final RowData rowData;
   final VoidCallback onAdd;
   final VoidCallback onRemove;
+  final bool editTime;
 
   RowItem({
     Key? key,
     required this.rowData,
     required this.onAdd,
     required this.onRemove,
+    required this.editTime,
   }) : super(key: key);
 
   @override
@@ -20,6 +22,7 @@ class RowItem extends StatefulWidget {
 class _RowItemState extends State<RowItem> {
   late TextEditingController weight;
   late TextEditingController reps;
+  late TextEditingController timeController;
   late String rpe;
 
   @override
@@ -28,6 +31,7 @@ class _RowItemState extends State<RowItem> {
     rpe = widget.rowData.RPE;
     weight = TextEditingController(text: widget.rowData.weight);
     reps = TextEditingController(text: widget.rowData.numReps);
+    timeController = TextEditingController(text: widget.rowData.timestamp ?? "");
   }
 
   @override
@@ -71,6 +75,17 @@ class _RowItemState extends State<RowItem> {
             );
           }).toList(),
         ),
+        if (widget.editTime)
+          Container(
+            width: 150,
+            child: TextField(
+              controller: timeController,
+              decoration: InputDecoration(labelText: 'Time (DDMMYY)'),
+              onChanged: (value) {
+                widget.rowData.timestamp = value;
+              },
+            ),
+          ),
       ],
     );
   }
@@ -79,6 +94,7 @@ class _RowItemState extends State<RowItem> {
   void dispose() {
     weight.dispose();
     reps.dispose();
+    timeController.dispose();
     super.dispose();
   }
 }

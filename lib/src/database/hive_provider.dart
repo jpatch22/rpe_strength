@@ -58,4 +58,9 @@ class HiveProvider extends ChangeNotifier {
     await _hiveService.saveAdvancedRowItemList(rowData, exercise, timestamp: timestamp);
     await fetchWorkoutDataItems();
   }
+
+  Future<void> deleteWorkoutDataItem(WorkoutDataItem item) async {
+    await _hiveService.deleteWorkoutDataItem(item);
+    await fetchWorkoutDataItems();
+  }
 }

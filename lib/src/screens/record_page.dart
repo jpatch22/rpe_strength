@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rpe_strength/src/database/hive_provider.dart';
@@ -16,6 +18,7 @@ class _RecordPageState extends State<RecordPage> {
   List<RowData> rows = [RowData()];
   String? selectedExercise;
   bool showAdvanced = false;
+  bool editTime = false;
 
   @override
   void initState() {
@@ -115,11 +118,13 @@ class _RecordPageState extends State<RecordPage> {
                                 weight: e.weight,
                                 numReps: e.numReps,
                                 RPE: e.RPE,
+                                timestamp: e.timestamp,
                               )).toList()
                               : rows.map((e) => RowData(
                                 weight: e.weight,
                                 numReps: e.numReps,
                                 RPE: e.RPE,
+                                timestamp: e.timestamp,
                               )).toList();
                         });
                       },
@@ -128,6 +133,19 @@ class _RecordPageState extends State<RecordPage> {
                       inactiveTrackColor: Colors.grey[300],
                     ),
                     Text(showAdvanced ? 'Advanced' : 'Basic'),
+                    const SizedBox(width: 10),
+                    Switch(
+                      value: editTime,
+                      onChanged: (value) {
+                        setState(() {
+                          editTime = value;
+                        });
+                      },
+                      activeColor: Colors.blue,
+                      inactiveThumbColor: Colors.grey,
+                      inactiveTrackColor: Colors.grey[300],
+                    ),
+                    Text('Edit Time'),
                   ],
                 ),
                 Padding(
@@ -139,6 +157,7 @@ class _RecordPageState extends State<RecordPage> {
                       2: FlexColumnWidth(),
                       if (showAdvanced) 3: FlexColumnWidth(),
                       if (showAdvanced) 4: FlexColumnWidth(),
+                      if (editTime) 5: FlexColumnWidth(),
                     },
                     children: [
                       TableRow(
@@ -149,6 +168,7 @@ class _RecordPageState extends State<RecordPage> {
                           Text('RPE', textAlign: TextAlign.center),
                           if (showAdvanced) Text('Hype', textAlign: TextAlign.center),
                           if (showAdvanced) Text('Notes', textAlign: TextAlign.center),
+                          if (editTime) Text('Time', textAlign: TextAlign.center),
                         ],
                       ),
                     ],
@@ -167,12 +187,14 @@ class _RecordPageState extends State<RecordPage> {
                               rowData: rows[index] as AdvancedRowData,
                               onAdd: addRow,
                               onRemove: removeRow,
+                              editTime: editTime,
                             )
                           : RowItem(
                               key: UniqueKey(),
                               rowData: rows[index],
                               onAdd: addRow,
                               onRemove: removeRow,
+                              editTime: editTime,
                             ),
                     );
                   },
