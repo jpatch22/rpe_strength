@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rpe_strength/src/Utils/Util.dart';
 import 'package:rpe_strength/src/database/models/workout_data_item.dart';
 import '../database/hive_provider.dart';
 import 'package:rpe_strength/src/widgets/custom_dropdown_search_base.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
-import 'dart:math';
 
 class ProgressPage extends StatefulWidget {
   @override
@@ -33,26 +33,6 @@ class _ProgressPageState extends State<ProgressPage> {
     });
   }
 
-  double _calculate1RM(WorkoutDataItem item) {
-    double modNumReps = (item.numReps + 10 - (double.tryParse(item.RPE) ?? 11));
-    switch (selectedMethod) {
-      case 'Epley':
-        return item.weight * (1 + 0.0333 * modNumReps);
-      case 'Brzycki':
-        return item.weight / (1.0278 - 0.0278 * modNumReps);
-      case 'Lombardi':
-        return item.weight * pow(modNumReps, 0.10);
-      case 'O\'Conner':
-        return item.weight * (1 + 0.025 * modNumReps);
-      case 'Wathan':
-        return (100 * item.weight) / (48.8 + 53.8 * exp(-0.075 * modNumReps));
-      case 'RPE-based':
-        return (item.weight * (10 - (double.tryParse(item.RPE) ?? 10.0))) / 0.0333;
-      default:
-        return item.weight; // Fallback to the actual weight if no method is selected
-    }
-  }
-
   void _updateChartSeries(HiveProvider hiveProvider) {
     List<WorkoutDataItem> items = hiveProvider.workoutDataItems;
 
@@ -76,7 +56,7 @@ class _ProgressPageState extends State<ProgressPage> {
       updatedSeriesList.add(LineSeries<WorkoutDataItem, DateTime>(
         dataSource: items,
         xValueMapper: (WorkoutDataItem item, _) => item.timestamp!,
-        yValueMapper: (WorkoutDataItem item, _) => _calculate1RM(item),
+        yValueMapper: (WorkoutDataItem item, _) => Util.calculate1RM(item, selectedMethod),
         name: exercise,
         markerSettings: MarkerSettings(
           isVisible: true,

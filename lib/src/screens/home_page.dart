@@ -16,11 +16,11 @@ class HomePage extends StatelessWidget {
             'assets/images/home_image.webp',
             fit: BoxFit.cover,
           ),
-          const Center(
+          Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
+                const Text(
                   'Gym Progress Tracker',
                   style: TextStyle(
                     fontSize: 36,
@@ -35,12 +35,12 @@ class HomePage extends StatelessWidget {
                     ],
                   ),
                 ),
-                // ElevatedButton(
-                // onPressed: () {
-                // saveRandTestData(hiveProvider);
-                // },
-                // child: Text("Debug"),
-                // ),
+                ElevatedButton(
+                  onPressed: () {
+                    saveRandTestData(hiveProvider);
+                  },
+                  child: Text("Debug"),
+                ),
               ],
             ),
           ),

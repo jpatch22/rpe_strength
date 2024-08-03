@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rpe_strength/src/screens/history_page.dart';
+import 'package:rpe_strength/src/screens/predict_page.dart';
 import 'package:rpe_strength/src/screens/progress_page.dart';
 import './screens/home_page.dart';
 import 'screens/record_page.dart';
@@ -25,6 +26,7 @@ class _MyAppState extends State<MyApp> {
     RecordPage(),
     HistoryPage(),
     ProgressPage(),
+    PredictPage(),
   ];
 
   void _onItemTapped(int index) {
@@ -59,6 +61,10 @@ class _MyAppState extends State<MyApp> {
                   icon: Icon(Icons.show_chart),
                   label: 'Progress',
                 ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.assessment),
+                  label: "Predict"
+                  )
               ],
               currentIndex: _selectedIndex,
               selectedItemColor: Colors.amber[800],
