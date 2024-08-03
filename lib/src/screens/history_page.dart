@@ -5,56 +5,10 @@ import 'package:rpe_strength/src/database/models/workout_data_item.dart';
 import 'package:rpe_strength/src/models/hype_level.dart';
 import '../database/hive_provider.dart';
 import '../providers/advanced_mode_provider.dart';
+import '../providers/history_page_provider.dart';
 import '../widgets/custom_dropdown_search_base.dart';
 
-class HistoryPage extends StatefulWidget {
-  @override
-  _HistoryPageState createState() => _HistoryPageState();
-}
-
-class _HistoryPageState extends State<HistoryPage> {
-  List<String> selectedExercises = [];
-
-  @override
-  void initState() {
-    super.initState();
-    final hiveProvider = Provider.of<HiveProvider>(context, listen: false);
-    hiveProvider.fetchExerciseNames();
-  }
-
-  void _onDropdownChanged(List<String> selectedItems) {
-    setState(() {
-      selectedExercises = selectedItems;
-    });
-  }
-
-  void _deleteItem(BuildContext context, WorkoutDataItem item, HiveProvider hiveProvider) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Delete Confirmation'),
-          content: Text('Are you sure you want to delete this item?'),
-          actions: <Widget>[
-            TextButton(
-              child: Text('Cancel'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            TextButton(
-              child: Text('Delete'),
-              onPressed: () {
-                hiveProvider.deleteWorkoutDataItem(item);
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
+class HistoryPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final advancedModeProvider = Provider.of<AdvancedModeProvider>(context);
@@ -71,9 +25,9 @@ class _HistoryPageState extends State<HistoryPage> {
           ),
         ],
       ),
-      body: Consumer<HiveProvider>(
-        builder: (context, hiveProvider, child) {
-          if (hiveProvider.exerciseNames.isEmpty) {
+      body: Consumer<HistoryPageProvider>(
+        builder: (context, historyPageProvider, child) {
+          if (historyPageProvider.hiveProvider.exerciseNames.isEmpty) {
             return const Center(child: CircularProgressIndicator());
           }
 
@@ -82,9 +36,9 @@ class _HistoryPageState extends State<HistoryPage> {
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: CustomDropdownSearchBase(
-                  items: hiveProvider.exerciseNames,
-                  onChanged: _onDropdownChanged,
-                  selectedItems: selectedExercises,
+                  items: historyPageProvider.hiveProvider.exerciseNames,
+                  onChanged: historyPageProvider.onDropdownChanged,
+                  selectedItems: historyPageProvider.selectedExercises,
                   labelText: "Filter Exercises",
                   hintText: "Select exercises to filter",
                 ),
@@ -102,8 +56,8 @@ class _HistoryPageState extends State<HistoryPage> {
                     });
 
                     // Filter items based on selected exercises
-                    if (selectedExercises.isNotEmpty) {
-                      items = items.where((item) => selectedExercises.contains(item.exercise)).toList();
+                    if (historyPageProvider.selectedExercises.isNotEmpty) {
+                      items = items.where((item) => historyPageProvider.selectedExercises.contains(item.exercise)).toList();
                     }
 
                     if (items.isEmpty) {
@@ -125,7 +79,7 @@ class _HistoryPageState extends State<HistoryPage> {
                               Text('Time: ${item.timestamp?.toLocal().toString().substring(0, 16) ?? "No timestamp"}'),
                               IconButton(
                                 icon: Icon(Icons.remove_circle, color: Colors.red),
-                                onPressed: () => _deleteItem(context, item, hiveProvider),
+                                onPressed: () => historyPageProvider.deleteItem(context, item),
                               ),
                             ],
                           ),
