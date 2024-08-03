@@ -96,13 +96,6 @@ class _ProgressPageState extends State<ProgressPage> {
                 padding: const EdgeInsets.all(8.0),
                 child: Column(
                   children: [
-                    // CustomDropdownSearchBase(
-                      // items: hiveProvider.exerciseNames,
-                      // onChanged: _onDropdownChanged,
-                      // selectedItems: selectedExercises,
-                      // labelText: "Filter Exercises",
-                      // hintText: "Select exercises to filter",
-                    // ),
                     SizedBox(
                       width: 300.0,
                       child: DropdownButton<String>(

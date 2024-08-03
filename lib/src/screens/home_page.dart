@@ -30,41 +30,40 @@ class HomePage extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => SettingsView(controller: settingsController),
+                      builder: (context) =>
+                          SettingsView(controller: settingsController),
                     ),
                   );
                 },
               ),
             ),
           ),
-          Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text(
-                  'Gym Progress Tracker',
-                  style: TextStyle(
-                    fontSize: 36,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    shadows: [
-                      Shadow(
-                        blurRadius: 10.0,
-                        color: Colors.black,
-                        offset: Offset(2.0, 2.0),
-                      ),
-                    ],
-                  ),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              SizedBox(height: 50),
+              const Text(
+                'Gym Progress Tracker',
+                style: TextStyle(
+                  fontSize: 36,
+                  fontWeight: FontWeight.bold,
+                  shadows: [
+                    Shadow(
+                      blurRadius: 10.0,
+                      color: Colors.black,
+                      offset: Offset(2.0, 2.0),
+                    ),
+                  ],
                 ),
-                SizedBox(height: 20), // Space between text and button
-                ElevatedButton(
-                  onPressed: () {
-                    saveRandTestData(hiveProvider);
-                  },
-                  child: Text("Debug"),
-                ),
-              ],
-            ),
+              ),
+              SizedBox(height: 20), // Space between text and button
+              ElevatedButton(
+                onPressed: () {
+                  saveRandTestData(hiveProvider);
+                },
+                child: Text("Debug"),
+              ),
+            ],
           ),
         ],
       ),

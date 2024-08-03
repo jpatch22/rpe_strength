@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:rpe_strength/src/screens/history_page.dart';
 import 'package:rpe_strength/src/screens/predict_page.dart';
 import 'package:rpe_strength/src/screens/progress_page.dart';
-import './screens/home_page.dart';
-import 'screens/record_page.dart';
-import 'settings/settings_controller.dart';
+import 'package:rpe_strength/src/screens/home_page.dart';
+import 'package:rpe_strength/src/screens/record_page.dart';
+import 'package:rpe_strength/src/settings/settings_controller.dart';
+import 'package:rpe_strength/src/themes/themes.dart';
 
 class MyApp extends StatefulWidget {
   const MyApp({
@@ -40,9 +42,10 @@ class _MyAppState extends State<MyApp> {
     return AnimatedBuilder(
       animation: widget.settingsController,
       builder: (BuildContext context, Widget? child) {
+        bool isDarkMode = widget.settingsController.themeMode == ThemeMode.dark;
         return MaterialApp(
-          theme: ThemeData.light(),
-          darkTheme: ThemeData.dark(),
+          theme: customLightTheme,
+          darkTheme: customDarkTheme,
           themeMode: widget.settingsController.themeMode,
           home: Scaffold(
             body: _widgetOptions.elementAt(_selectedIndex),
@@ -66,11 +69,11 @@ class _MyAppState extends State<MyApp> {
                 ),
                 BottomNavigationBarItem(
                   icon: Icon(Icons.assessment),
-                  label: "Predict"
+                  label: 'Predict',
                 ),
               ],
               currentIndex: _selectedIndex,
-              selectedItemColor: Colors.amber[800],
+              selectedItemColor: isDarkMode ? Colors.amber[800] : Colors.blue,
               unselectedItemColor: Colors.grey,
               onTap: _onItemTapped,
             ),
