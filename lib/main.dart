@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart'; // Make sure to import the provider package
 import 'package:rpe_strength/src/database/hive_provider.dart';
+import 'package:rpe_strength/src/models/adv_row_data.dart';
+import 'package:rpe_strength/src/models/row_data.dart';
 import 'src/app.dart';
 import 'src/settings/settings_controller.dart';
 import 'src/settings/settings_service.dart';

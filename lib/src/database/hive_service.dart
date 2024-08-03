@@ -66,9 +66,18 @@ class HiveService {
     }
   }
 
-  Future<void> saveAdvancedRowItemList(List<AdvancedRowData> rowData, String exercise) async {
-    DateTime now = DateTime.now();
-    DateTime nowSave = DateTime(now.year, now.month, now.day, now.hour, now.minute);
+  Future<void> saveAdvancedRowItemList(
+    List<AdvancedRowData> rowData, 
+    String exercise,
+    {DateTime? timestamp}
+  ) async {
+    DateTime saveTime;
+    if (timestamp == null) {
+      DateTime now = DateTime.now();
+      saveTime = DateTime(now.year, now.month, now.day, now.hour, now.minute);
+    } else {
+      saveTime = DateTime(timestamp.year, timestamp.month, timestamp.day, timestamp.hour, timestamp.minute);
+    }
     List<WorkoutDataItem> converted = [];
     try {
       for (var data in rowData) {
@@ -82,7 +91,7 @@ class HiveService {
           numSets: int.tryParse(data.numSets) ?? 0,
           hype: HypeLevel.fromString(data.hype).ordinal,
           notes: data.notes,
-          timestamp: nowSave,
+          timestamp: saveTime,
           exercise: exercise,
         );
         converted.add(item);

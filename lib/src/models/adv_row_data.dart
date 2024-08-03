@@ -9,12 +9,17 @@ class AdvancedRowData extends RowData {
     required String weight,
     required String numReps,
     required String RPE,
-    this.numSets = '',
+    this.numSets = '1',
     this.hype = 'Moderate',
     this.notes = '',
   }) : super(
-          weight: weight = '',
-          numReps: numReps = '',
-          RPE: RPE = '5',
+          weight: weight,
+          numReps: numReps,
+          RPE: RPE,
         );
+
+  @override
+  String toString() {
+    return 'AdvancedRowData(weight: $weight, numReps: $numReps, RPE: $RPE, numSets: $numSets, hype: $hype, notes: $notes)';
+  }
 }

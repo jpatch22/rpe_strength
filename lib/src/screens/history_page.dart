@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:rpe_strength/src/database/models/workout_data_item.dart';
+import 'package:rpe_strength/src/models/hype_level.dart';
 import '../database/hive_provider.dart';
 import '../widgets/custom_dropdown_search_base.dart';
 
@@ -89,7 +90,7 @@ class _HistoryPageState extends State<HistoryPage> {
                         return ListTile(
                           title: Text('Exercise: ${item.exercise}'),
                           subtitle: showAdvanced
-                              ? Text('Reps: ${item.numReps}, Weight: ${item.weight}, RPE: ${item.RPE}, Sets: ${item.numSets}, Hype: ${item.hype}, Notes: ${item.notes}')
+                              ? Text('Reps: ${item.numReps}, Weight: ${item.weight}, RPE: ${item.RPE}, Sets: ${item.numSets}, Hype: ${HypeLevel.fromOrdinal(item.hype).name}, Notes: ${item.notes}')
                               : Text('Reps: ${item.numReps}, Weight: ${item.weight}, RPE: ${item.RPE}'),
                           trailing: Text('Time: ${item.timestamp?.toLocal().toString().substring(0, 16) ?? "No timestamp"}'),
                         );

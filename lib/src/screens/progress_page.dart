@@ -14,8 +14,8 @@ class ProgressPage extends StatefulWidget {
 class _ProgressPageState extends State<ProgressPage> {
   List<String> selectedExercises = [];
   List<ChartSeries<WorkoutDataItem, DateTime>> seriesList = [];
-  String selectedMethod = 'RPE-based';
-  List<String> calculationMethods = ['Epley', 'Brzycki', 'Lombardi', 'O\'Conner', 'Wathan', 'RPE-based'];
+  String selectedMethod = 'Epley';
+  List<String> calculationMethods = ['Epley', 'Brzycki', 'Lombardi', 'O\'Conner', 'Wathan'];
 
   @override
   void initState() {
@@ -34,17 +34,18 @@ class _ProgressPageState extends State<ProgressPage> {
   }
 
   double _calculate1RM(WorkoutDataItem item) {
+    double modNumReps = (item.numReps + 10 - (double.tryParse(item.RPE) ?? 11));
     switch (selectedMethod) {
       case 'Epley':
-        return item.weight * (1 + 0.0333 * item.numReps);
+        return item.weight * (1 + 0.0333 * modNumReps);
       case 'Brzycki':
-        return item.weight / (1.0278 - 0.0278 * item.numReps);
+        return item.weight / (1.0278 - 0.0278 * modNumReps);
       case 'Lombardi':
-        return item.weight * pow(item.numReps, 0.10);
+        return item.weight * pow(modNumReps, 0.10);
       case 'O\'Conner':
-        return item.weight * (1 + 0.025 * item.numReps);
+        return item.weight * (1 + 0.025 * modNumReps);
       case 'Wathan':
-        return (100 * item.weight) / (48.8 + 53.8 * exp(-0.075 * item.numReps));
+        return (100 * item.weight) / (48.8 + 53.8 * exp(-0.075 * modNumReps));
       case 'RPE-based':
         return (item.weight * (10 - (double.tryParse(item.RPE) ?? 10.0))) / 0.0333;
       default:
@@ -77,6 +78,10 @@ class _ProgressPageState extends State<ProgressPage> {
         xValueMapper: (WorkoutDataItem item, _) => item.timestamp!,
         yValueMapper: (WorkoutDataItem item, _) => _calculate1RM(item),
         name: exercise,
+        markerSettings: MarkerSettings(
+          isVisible: true,
+          shape: DataMarkerType.circle
+        )
       ));
     });
 
@@ -111,13 +116,13 @@ class _ProgressPageState extends State<ProgressPage> {
                 padding: const EdgeInsets.all(8.0),
                 child: Column(
                   children: [
-                    CustomDropdownSearchBase(
-                      items: hiveProvider.exerciseNames,
-                      onChanged: _onDropdownChanged,
-                      selectedItems: selectedExercises,
-                      labelText: "Filter Exercises",
-                      hintText: "Select exercises to filter",
-                    ),
+                    // CustomDropdownSearchBase(
+                      // items: hiveProvider.exerciseNames,
+                      // onChanged: _onDropdownChanged,
+                      // selectedItems: selectedExercises,
+                      // labelText: "Filter Exercises",
+                      // hintText: "Select exercises to filter",
+                    // ),
                     SizedBox(
                       width: 300.0,
                       child: DropdownButton<String>(
@@ -137,7 +142,7 @@ class _ProgressPageState extends State<ProgressPage> {
               ),
               Expanded(
                 child: SfCartesianChart(
-                  title: ChartTitle(text: 'Workout Progress'),
+                  title: ChartTitle(text: 'e1RM Progress'),
                   legend: Legend(isVisible: true),
                   tooltipBehavior: TooltipBehavior(enable: true),
                   series: seriesList,

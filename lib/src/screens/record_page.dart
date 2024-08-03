@@ -90,7 +90,7 @@ class _RecordPageState extends State<RecordPage> {
                         items: hiveProvider.exerciseNames,
                         onChanged: _onDropdownChanged,
                         selectedItem: selectedExercise,
-                        labelText: "Select Exercise",
+                        labelText: "",
                         hintText: "Search and select an exercise",
                       ),
                     ),
@@ -137,19 +137,18 @@ class _RecordPageState extends State<RecordPage> {
                       0: FlexColumnWidth(),
                       1: FlexColumnWidth(),
                       2: FlexColumnWidth(),
-                      3: FixedColumnWidth(50),
-                      4: FixedColumnWidth(50),
+                      if (showAdvanced) 3: FlexColumnWidth(),
+                      if (showAdvanced) 4: FlexColumnWidth(),
                     },
                     children: [
                       TableRow(
                         children: [
-                          Text('Weight'),
-                          Text('Sets'),
-                          Text('Reps'),
-                          if (showAdvanced) Text('Hype'),
-                          if (showAdvanced) Text('Notes'),
-                          SizedBox.shrink(), // Empty cell
-                          SizedBox.shrink(), // Empty cell
+                          Text('Weight', textAlign: TextAlign.center),
+                          if (showAdvanced) Text('Sets', textAlign: TextAlign.center),
+                          Text('Reps', textAlign: TextAlign.center),
+                          Text('RPE', textAlign: TextAlign.center),
+                          if (showAdvanced) Text('Hype', textAlign: TextAlign.center),
+                          if (showAdvanced) Text('Notes', textAlign: TextAlign.center),
                         ],
                       ),
                     ],
@@ -162,34 +161,19 @@ class _RecordPageState extends State<RecordPage> {
                   itemBuilder: (context, index) {
                     return Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: Table(
-                        columnWidths: {
-                          0: FlexColumnWidth(),
-                          1: FlexColumnWidth(),
-                          2: FlexColumnWidth(),
-                          3: FixedColumnWidth(50),
-                          4: FixedColumnWidth(50),
-                        },
-                        children: [
-                          TableRow(
-                            children: [
-                              showAdvanced
-                                  ? AdvancedRowItem(
-                                      key: UniqueKey(),
-                                      rowData: rows[index] as AdvancedRowData,
-                                      onAdd: addRow,
-                                      onRemove: removeRow,
-                                    )
-                                  : RowItem(
-                                      key: UniqueKey(),
-                                      rowData: rows[index],
-                                      onAdd: addRow,
-                                      onRemove: removeRow,
-                                    ),
-                            ],
-                          ),
-                        ],
-                      ),
+                      child: showAdvanced
+                          ? AdvancedRowItem(
+                              key: UniqueKey(),
+                              rowData: rows[index] as AdvancedRowData,
+                              onAdd: addRow,
+                              onRemove: removeRow,
+                            )
+                          : RowItem(
+                              key: UniqueKey(),
+                              rowData: rows[index],
+                              onAdd: addRow,
+                              onRemove: removeRow,
+                            ),
                     );
                   },
                 ),
