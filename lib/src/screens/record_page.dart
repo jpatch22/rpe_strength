@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rpe_strength/src/database/hive_provider.dart';
@@ -8,6 +6,7 @@ import 'package:rpe_strength/src/models/row_data.dart';
 import 'package:rpe_strength/src/widgets/row_item.dart';
 import 'package:rpe_strength/src/widgets/adv_row_item.dart';
 import 'package:rpe_strength/src/widgets/custom_dropdown_search.dart';
+import '../providers/advanced_mode_provider.dart';
 
 class RecordPage extends StatefulWidget {
   @override
@@ -17,7 +16,6 @@ class RecordPage extends StatefulWidget {
 class _RecordPageState extends State<RecordPage> {
   List<RowData> rows = [RowData()];
   String? selectedExercise;
-  bool showAdvanced = false;
   bool editTime = false;
 
   @override
@@ -33,7 +31,7 @@ class _RecordPageState extends State<RecordPage> {
     });
   }
 
-  void onSaveButtonPress(HiveProvider hiveProvider) {
+  void onSaveButtonPress(HiveProvider hiveProvider, bool showAdvanced) {
     if (showAdvanced) {
       hiveProvider.saveAdvancedRowItemList(rows.cast<AdvancedRowData>(), selectedExercise ?? "");
     } else {
@@ -48,7 +46,7 @@ class _RecordPageState extends State<RecordPage> {
     });
   }
 
-  void addRow() {
+  void addRow(bool showAdvanced) {
     setState(() {
       rows.add(showAdvanced
           ? AdvancedRowData(weight: '', numReps: '', RPE: '5')
@@ -66,6 +64,8 @@ class _RecordPageState extends State<RecordPage> {
 
   @override
   Widget build(BuildContext context) {
+    final advancedModeProvider = Provider.of<AdvancedModeProvider>(context);
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Record Sets'),
@@ -83,7 +83,7 @@ class _RecordPageState extends State<RecordPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     ElevatedButton(
-                      onPressed: () => onSaveButtonPress(hiveProvider),
+                      onPressed: () => onSaveButtonPress(hiveProvider, advancedModeProvider.showAdvanced),
                       child: const Text("Save Data"),
                     ),
                     const SizedBox(width: 10),
@@ -99,7 +99,7 @@ class _RecordPageState extends State<RecordPage> {
                     ),
                     const SizedBox(width: 10),
                     ElevatedButton(
-                      onPressed: addRow,
+                      onPressed: () => addRow(advancedModeProvider.showAdvanced),
                       child: const Text("+"),
                     ),
                     const SizedBox(width: 10),
@@ -109,10 +109,10 @@ class _RecordPageState extends State<RecordPage> {
                     ),
                     const SizedBox(width: 10),
                     Switch(
-                      value: showAdvanced,
+                      value: advancedModeProvider.showAdvanced,
                       onChanged: (value) {
+                        advancedModeProvider.setAdvancedMode(value);
                         setState(() {
-                          showAdvanced = value;
                           rows = value
                               ? rows.map((e) => AdvancedRowData(
                                 weight: e.weight,
@@ -132,7 +132,7 @@ class _RecordPageState extends State<RecordPage> {
                       inactiveThumbColor: Colors.grey,
                       inactiveTrackColor: Colors.grey[300],
                     ),
-                    Text(showAdvanced ? 'Advanced' : 'Basic'),
+                    Text(advancedModeProvider.showAdvanced ? 'Advanced' : 'Basic'),
                     const SizedBox(width: 10),
                     Switch(
                       value: editTime,
@@ -155,19 +155,19 @@ class _RecordPageState extends State<RecordPage> {
                       0: FlexColumnWidth(),
                       1: FlexColumnWidth(),
                       2: FlexColumnWidth(),
-                      if (showAdvanced) 3: FlexColumnWidth(),
-                      if (showAdvanced) 4: FlexColumnWidth(),
+                      if (advancedModeProvider.showAdvanced) 3: FlexColumnWidth(),
+                      if (advancedModeProvider.showAdvanced) 4: FlexColumnWidth(),
                       if (editTime) 5: FlexColumnWidth(),
                     },
                     children: [
                       TableRow(
                         children: [
                           Text('Weight', textAlign: TextAlign.center),
-                          if (showAdvanced) Text('Sets', textAlign: TextAlign.center),
+                          if (advancedModeProvider.showAdvanced) Text('Sets', textAlign: TextAlign.center),
                           Text('Reps', textAlign: TextAlign.center),
                           Text('RPE', textAlign: TextAlign.center),
-                          if (showAdvanced) Text('Hype', textAlign: TextAlign.center),
-                          if (showAdvanced) Text('Notes', textAlign: TextAlign.center),
+                          if (advancedModeProvider.showAdvanced) Text('Hype', textAlign: TextAlign.center),
+                          if (advancedModeProvider.showAdvanced) Text('Notes', textAlign: TextAlign.center),
                           if (editTime) Text('Time', textAlign: TextAlign.center),
                         ],
                       ),
@@ -181,18 +181,18 @@ class _RecordPageState extends State<RecordPage> {
                   itemBuilder: (context, index) {
                     return Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: showAdvanced
+                      child: advancedModeProvider.showAdvanced
                           ? AdvancedRowItem(
                               key: UniqueKey(),
                               rowData: rows[index] as AdvancedRowData,
-                              onAdd: addRow,
+                              onAdd: () => addRow(advancedModeProvider.showAdvanced),
                               onRemove: removeRow,
                               editTime: editTime,
                             )
                           : RowItem(
                               key: UniqueKey(),
                               rowData: rows[index],
-                              onAdd: addRow,
+                              onAdd: () => addRow(advancedModeProvider.showAdvanced),
                               onRemove: removeRow,
                               editTime: editTime,
                             ),

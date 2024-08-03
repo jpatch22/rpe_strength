@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:rpe_strength/src/database/models/workout_data_item.dart';
 import 'package:rpe_strength/src/models/hype_level.dart';
 import '../database/hive_provider.dart';
+import '../providers/advanced_mode_provider.dart';
 import '../widgets/custom_dropdown_search_base.dart';
 
 class HistoryPage extends StatefulWidget {
@@ -12,7 +13,6 @@ class HistoryPage extends StatefulWidget {
 }
 
 class _HistoryPageState extends State<HistoryPage> {
-  bool showAdvanced = false;
   List<String> selectedExercises = [];
 
   @override
@@ -57,16 +57,16 @@ class _HistoryPageState extends State<HistoryPage> {
 
   @override
   Widget build(BuildContext context) {
+    final advancedModeProvider = Provider.of<AdvancedModeProvider>(context);
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Workout History'),
         actions: [
           Switch(
-            value: showAdvanced,
+            value: advancedModeProvider.showAdvanced,
             onChanged: (value) {
-              setState(() {
-                showAdvanced = value;
-              });
+              advancedModeProvider.setAdvancedMode(value);
             },
           ),
         ],
@@ -116,7 +116,7 @@ class _HistoryPageState extends State<HistoryPage> {
                         WorkoutDataItem item = items[index];
                         return ListTile(
                           title: Text('Exercise: ${item.exercise}'),
-                          subtitle: showAdvanced
+                          subtitle: advancedModeProvider.showAdvanced
                               ? Text('Reps: ${item.numReps}, Weight: ${item.weight}, RPE: ${item.RPE}, Sets: ${item.numSets}, Hype: ${HypeLevel.fromOrdinal(item.hype).name}, Notes: ${item.notes}')
                               : Text('Reps: ${item.numReps}, Weight: ${item.weight}, RPE: ${item.RPE}'),
                           trailing: Row(

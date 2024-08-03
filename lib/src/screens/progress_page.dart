@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rpe_strength/src/Utils/Util.dart';
 import 'package:rpe_strength/src/database/models/workout_data_item.dart';
+import 'package:rpe_strength/src/providers/method_provider.dart';
 import '../database/hive_provider.dart';
-import 'package:rpe_strength/src/widgets/custom_dropdown_search_base.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 class ProgressPage extends StatefulWidget {
@@ -14,26 +14,26 @@ class ProgressPage extends StatefulWidget {
 class _ProgressPageState extends State<ProgressPage> {
   List<String> selectedExercises = [];
   List<ChartSeries<WorkoutDataItem, DateTime>> seriesList = [];
-  String selectedMethod = 'Epley';
-  List<String> calculationMethods = ['Epley', 'Brzycki', 'Lombardi', 'O\'Conner', 'Wathan'];
 
   @override
   void initState() {
     super.initState();
     final hiveProvider = Provider.of<HiveProvider>(context, listen: false);
+    final methodProvider = Provider.of<MethodProvider>(context, listen: false);
     hiveProvider.fetchExerciseNames();
-    _updateChartSeries(hiveProvider);
+    _updateChartSeries(hiveProvider, methodProvider);
   }
 
   void _onDropdownChanged(List<String> selectedItems) {
     setState(() {
       selectedExercises = selectedItems;
       final hiveProvider = Provider.of<HiveProvider>(context, listen: false);
-      _updateChartSeries(hiveProvider);
+      final methodProvider = Provider.of<MethodProvider>(context, listen: false);
+      _updateChartSeries(hiveProvider, methodProvider);
     });
   }
 
-  void _updateChartSeries(HiveProvider hiveProvider) {
+  void _updateChartSeries(HiveProvider hiveProvider, MethodProvider methodPovider) {
     List<WorkoutDataItem> items = hiveProvider.workoutDataItems;
 
     // Filter items based on selected exercises
@@ -56,7 +56,7 @@ class _ProgressPageState extends State<ProgressPage> {
       updatedSeriesList.add(LineSeries<WorkoutDataItem, DateTime>(
         dataSource: items,
         xValueMapper: (WorkoutDataItem item, _) => item.timestamp!,
-        yValueMapper: (WorkoutDataItem item, _) => Util.calculate1RM(item, selectedMethod),
+        yValueMapper: (WorkoutDataItem item, _) => Util.calculate1RM(item, methodPovider.selectedMethod),
         name: exercise,
         markerSettings: MarkerSettings(
           isVisible: true,
@@ -72,14 +72,19 @@ class _ProgressPageState extends State<ProgressPage> {
 
   void _onMethodChanged(String? newMethod) {
     setState(() {
-      selectedMethod = newMethod!;
+      if (newMethod == null) {
+        return;
+      }
+      final methodProvider = Provider.of<MethodProvider>(context, listen: false);
+      methodProvider.setSelectedMethod(newMethod);
       final hiveProvider = Provider.of<HiveProvider>(context, listen: false);
-      _updateChartSeries(hiveProvider);
+      _updateChartSeries(hiveProvider, methodProvider);
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final methodPovider = Provider.of<MethodProvider>(context);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Progress Tracking'),
@@ -99,9 +104,9 @@ class _ProgressPageState extends State<ProgressPage> {
                     SizedBox(
                       width: 300.0,
                       child: DropdownButton<String>(
-                        value: selectedMethod,
+                        value: methodPovider.selectedMethod,
                         onChanged: _onMethodChanged,
-                        items: calculationMethods.map((String method) {
+                        items: Util.calculationMethods.map((String method) {
                           return DropdownMenuItem<String>(
                             value: method,
                             child: Text(method),

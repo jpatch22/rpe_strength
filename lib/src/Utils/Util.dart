@@ -3,6 +3,7 @@ import 'dart:math';
 
 class Util {
   Util._();
+  static List<String> calculationMethods = ['Epley', 'Brzycki', 'Lombardi', 'O\'Conner', 'Wathan'];
 
   static DateTime? parseTime(String ddmmyy) {
     if (ddmmyy.length < 6) {
