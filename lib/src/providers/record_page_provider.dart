@@ -5,13 +5,17 @@ import '../database/hive_provider.dart';
 
 class RecordPageProvider extends ChangeNotifier {
   late HiveProvider hiveProvider;
-  List<RowData> rows = [RowData()];
+  List<dynamic> rows = [AdvancedRowData(weight: '', numReps: '', RPE: '5')];
   String? selectedExercise;
   bool editTime = false;
+  bool _initialized = false;
 
-  void initialize(HiveProvider provider) {
+  bool get initialized => _initialized;
+
+  Future<void> initialize(HiveProvider provider) async {
     hiveProvider = provider;
-    hiveProvider.fetchExerciseNames();
+    await hiveProvider.fetchExerciseNames();
+    _initialized = true;
     notifyListeners();
   }
 
@@ -24,7 +28,7 @@ class RecordPageProvider extends ChangeNotifier {
     if (showAdvanced) {
       hiveProvider.saveAdvancedRowItemList(rows.cast<AdvancedRowData>(), selectedExercise ?? "");
     } else {
-      hiveProvider.saveBaseRowItemList(rows, selectedExercise ?? "");
+      hiveProvider.saveBaseRowItemList(rows.cast<RowData>(), selectedExercise ?? "");
     }
 
     rows = showAdvanced
@@ -50,6 +54,13 @@ class RecordPageProvider extends ChangeNotifier {
 
   void toggleEditTime(bool value) {
     editTime = value;
+    notifyListeners();
+  }
+
+  void convertRows(bool showAdvanced) {
+    rows = showAdvanced
+        ? rows.map((e) => e is AdvancedRowData ? e : AdvancedRowData(weight: e.weight, numReps: e.numReps, RPE: e.RPE, timestamp: e.timestamp)).toList()
+        : rows.map((e) => e is RowData ? e : RowData(weight: e.weight, numReps: e.numReps, RPE: e.RPE, timestamp: e.timestamp)).toList();
     notifyListeners();
   }
 }
