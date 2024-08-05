@@ -1,4 +1,5 @@
 import 'package:hive/hive.dart';
+import 'package:uuid/uuid.dart';
 
 part 'workout_data_item.g.dart';
 
@@ -28,6 +29,9 @@ class WorkoutDataItem extends HiveObject {
   @HiveField(7)
   String exercise;
 
+  @HiveField(8)
+  String? id;
+
   WorkoutDataItem({
     this.weight = 0.0,
     this.numReps = 0,
@@ -37,5 +41,6 @@ class WorkoutDataItem extends HiveObject {
     this.notes = '',
     this.timestamp, 
     this.exercise = '',
-  });
+    String? id,
+  }) : id = id ?? const Uuid().v4();
 }
