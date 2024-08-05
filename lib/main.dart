@@ -1,5 +1,7 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rpe_strength/firebase_options.dart';
 import 'package:rpe_strength/src/database/hive_provider.dart';
 import 'package:rpe_strength/src/providers/advanced_mode_provider.dart';
 import 'package:rpe_strength/src/providers/method_provider.dart';
@@ -18,14 +20,14 @@ void main() async {
   Hive.registerAdapter(WorkoutDataItemAdapter());
 
   // Initialize Firebase
-  // try {
-  //   await Firebase.initializeApp(
-  //     options: DefaultFirebaseOptions.currentPlatform,
-  //   );
-  //   print("successful initialization");
-  // } catch (e) {
-  //   print("Error initializing firebase: $e");
-  // }
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    print("successful initialization");
+  } catch (e) {
+    print("Error initializing firebase: $e");
+  }
   
   // Set up the SettingsController, which will glue user settings to multiple
   // Flutter Widgets.
