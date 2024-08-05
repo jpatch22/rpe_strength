@@ -1,9 +1,10 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rpe_strength/src/database/hive_provider.dart';
 import 'package:rpe_strength/src/models/adv_row_data.dart';
+import 'package:rpe_strength/src/providers/auth_service.dart';
 import 'package:rpe_strength/src/settings/settings_controller.dart';
-import 'package:rpe_strength/src/settings/settings_service.dart';
 import 'package:rpe_strength/src/settings/settings_view.dart';
 
 class HomePage extends StatelessWidget {
@@ -11,6 +12,8 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final hiveProvider = Provider.of<HiveProvider>(context, listen: false);
     final settingsController = Provider.of<SettingsController>(context, listen: false);
+    final authService = Provider.of<AuthService>(context);
+    final user = authService.user;
 
     return Scaffold(
       body: Stack(
@@ -30,8 +33,7 @@ class HomePage extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) =>
-                          SettingsView(controller: settingsController),
+                      builder: (context) => SettingsView(controller: settingsController),
                     ),
                   );
                 },
@@ -63,6 +65,39 @@ class HomePage extends StatelessWidget {
                 },
                 child: Text("Debug"),
               ),
+              SizedBox(height: 20), // Space between buttons
+              if (user == null) 
+                ElevatedButton(
+                  onPressed: () async {
+                    User? user = await authService.signInWithGoogle();
+                    if (user != null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Sign In Successful: ${user.displayName}'),
+                        ),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Sign In Failed'),
+                        ),
+                      );
+                    }
+                  },
+                  child: Text('Sign In with Google'),
+                )
+              else
+                ElevatedButton(
+                  onPressed: () async {
+                    await authService.signOut();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Signed Out'),
+                      ),
+                    );
+                  },
+                  child: Text('Sign Out'),
+                ),
             ],
           ),
         ],
@@ -86,42 +121,5 @@ class HomePage extends StatelessWidget {
         [AdvancedRowData(weight: "245", numReps: "5", RPE: "6")],
         "Squat",
         timestamp: time2);
-  }
-}
-
-void main() {
-  runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => HiveProvider()),
-        ChangeNotifierProvider(
-          create: (context) => SettingsController(SettingsService())..loadSettings(),
-        ),
-      ],
-      child: MyApp(),
-    ),
-  );
-}
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final settingsController = Provider.of<SettingsController>(context);
-
-    return AnimatedBuilder(
-      animation: settingsController,
-      builder: (context, child) {
-        return MaterialApp(
-          title: 'Gym Progress Tracker',
-          theme: ThemeData.light(),
-          darkTheme: ThemeData.dark(),
-          themeMode: settingsController.themeMode,
-          home: HomePage(),
-          routes: {
-            SettingsView.routeName: (context) => SettingsView(controller: settingsController),
-          },
-        );
-      },
-    );
   }
 }

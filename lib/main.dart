@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:rpe_strength/firebase_options.dart';
 import 'package:rpe_strength/src/database/hive_provider.dart';
 import 'package:rpe_strength/src/providers/advanced_mode_provider.dart';
+import 'package:rpe_strength/src/providers/auth_service.dart';
 import 'package:rpe_strength/src/providers/method_provider.dart';
 import 'package:rpe_strength/src/providers/predict_page_provider.dart';
 import 'package:rpe_strength/src/providers/record_page_provider.dart';
@@ -48,6 +49,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => AdvancedModeProvider()),
         ChangeNotifierProvider(create: (_) => MethodProvider()),
         ChangeNotifierProvider(create: (_) => PredictPageProvider()),
+        ChangeNotifierProvider(create: (_) => AuthService()),
         ChangeNotifierProvider(create: (context) {
           final provider = RecordPageProvider();
           provider.initialize(Provider.of<HiveProvider>(context, listen: false));

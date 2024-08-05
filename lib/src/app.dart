@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:rpe_strength/src/screens/history_page.dart';
 import 'package:rpe_strength/src/screens/predict_page.dart';
 import 'package:rpe_strength/src/screens/progress_page.dart';
