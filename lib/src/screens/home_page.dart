@@ -66,7 +66,7 @@ class HomePage extends StatelessWidget {
                 child: Text("Debug"),
               ),
               SizedBox(height: 20), // Space between buttons
-              if (user == null) 
+              if (user == null)
                 ElevatedButton(
                   onPressed: () async {
                     User? user = await authService.signInWithGoogle();
@@ -86,7 +86,22 @@ class HomePage extends StatelessWidget {
                   },
                   child: Text('Sign In with Google'),
                 )
-              else
+              else ...[
+                Text(
+                  'Hello, ${user.displayName}',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    shadows: [
+                      Shadow(
+                        blurRadius: 5.0,
+                        color: Colors.black,
+                        offset: Offset(1.0, 1.0),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 10),
                 ElevatedButton(
                   onPressed: () async {
                     await authService.signOut();
@@ -98,6 +113,7 @@ class HomePage extends StatelessWidget {
                   },
                   child: Text('Sign Out'),
                 ),
+              ],
             ],
           ),
         ],
