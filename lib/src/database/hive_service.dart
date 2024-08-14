@@ -1,5 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:hive/hive.dart';
 import 'package:rpe_strength/src/Utils/Util.dart';
 import 'package:rpe_strength/src/database/models/workout_data_item.dart';
@@ -16,15 +16,15 @@ class HiveService {
   Box<WorkoutDataItem>? _workoutItemBox;
   Box<String>? _exerciseNameBox;
   Box<String>? _removedDefaultExerciseNameBox;
-  final DatabaseReference _firebaseDatabaseRef = FirebaseDatabase.instance.ref();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   HiveService() {
     _auth.authStateChanges().listen((User? user) {
       if (user != null) {
-        _syncWithFirebase();
+        _syncWithFirestore();
       } else {
-        _removeFirebaseListeners();
+        _removeFirestoreListeners();
       }
     });
   }
@@ -34,56 +34,56 @@ class HiveService {
     _exerciseNameBox = await Hive.openBox<String>(exerciseNameBoxName);
     _removedDefaultExerciseNameBox = await Hive.openBox<String>(removedDefaultExerciseNameBoxName);
     if (_auth.currentUser != null) {
-      _syncWithFirebase();
+      _syncWithFirestore();
     }
   }
 
-  void _syncWithFirebase() {
-    _firebaseDatabaseRef.child(workoutItemBoxName).onValue.listen((event) {
-      if (event.snapshot.value != null) {
-        _syncFromFirebaseToHive(event.snapshot.value as Map<dynamic, dynamic>);
+  void _syncWithFirestore() {
+    _firestore.collection(workoutItemBoxName).snapshots().listen((snapshot) {
+      if (snapshot.docs.isNotEmpty) {
+        _syncFromFirestoreToHive(snapshot.docs, isExercise: false);
       }
     });
 
-    _firebaseDatabaseRef.child(exerciseNameBoxName).onValue.listen((event) {
-      if (event.snapshot.value != null) {
-        _syncFromFirebaseToHive(event.snapshot.value as Map<dynamic, dynamic>, isExercise: true);
+    _firestore.collection(exerciseNameBoxName).snapshots().listen((snapshot) {
+      if (snapshot.docs.isNotEmpty) {
+        _syncFromFirestoreToHive(snapshot.docs, isExercise: true);
       }
     });
 
     _workoutItemBox?.watch().listen((event) {
-      _syncFromHiveToFirebase(event.key, event.value);
+      _syncFromHiveToFirestore(event.key, event.value);
     });
 
     _exerciseNameBox?.watch().listen((event) {
-      _syncFromHiveToFirebase(event.key, event.value, isExercise: true);
+      _syncFromHiveToFirestore(event.key, event.value, isExercise: true);
     });
   }
 
-  void _removeFirebaseListeners() {
-    _firebaseDatabaseRef.child(workoutItemBoxName).onValue.drain();
-    _firebaseDatabaseRef.child(exerciseNameBoxName).onValue.drain();
+  void _removeFirestoreListeners() {
+    // Firebase Firestore listeners are managed by the Firestore instance and usually do not need to be manually drained.
+    // Firestore automatically removes listeners when the stream is cancelled.
   }
 
-  void _syncFromFirebaseToHive(Map<dynamic, dynamic> data, {bool isExercise = false}) {
+  void _syncFromFirestoreToHive(List<QueryDocumentSnapshot<Map<String, dynamic>>> docs, {bool isExercise = false}) {
     if (isExercise) {
       _exerciseNameBox?.clear();
-      data.forEach((key, value) {
-        _exerciseNameBox?.put(key, value);
-      });
+      for (var doc in docs) {
+        _exerciseNameBox?.put(doc.id, doc.data()['name'] as String);
+      }
     } else {
       _workoutItemBox?.clear();
-      data.forEach((key, value) {
-        _workoutItemBox?.put(key, WorkoutDataItem.fromJson(value));
-      });
+      for (var doc in docs) {
+        _workoutItemBox?.put(doc.id, WorkoutDataItem.fromJson(doc.data()));
+      }
     }
   }
 
-  void _syncFromHiveToFirebase(dynamic key, dynamic value, {bool isExercise = false}) {
+  void _syncFromHiveToFirestore(dynamic key, dynamic value, {bool isExercise = false}) {
     if (isExercise) {
-      _firebaseDatabaseRef.child(exerciseNameBoxName).update({key: value});
+      _firestore.collection(exerciseNameBoxName).doc(key).set({'name': value});
     } else {
-      _firebaseDatabaseRef.child(workoutItemBoxName).update({key: (value as WorkoutDataItem).toJson()});
+      _firestore.collection(workoutItemBoxName).doc(key).set((value as WorkoutDataItem).toJson());
     }
   }
 
@@ -91,7 +91,8 @@ class HiveService {
     try {
       if (_workoutItemBox == null) return;
       for (WorkoutDataItem item in items) {
-        await _workoutItemBox!.add(item);
+        final key = await _workoutItemBox!.add(item);
+        await _firestore.collection(workoutItemBoxName).doc(key.toString()).set(item.toJson());
         print('Saved WorkoutDataItem: $item');
       }
       print('All items saved. Current box contents: ${_workoutItemBox!.values.toList()}');
@@ -125,7 +126,8 @@ class HiveService {
       }
       if (_workoutItemBox == null) return;
       for (var item in converted) {
-        await _workoutItemBox!.add(item);
+        final key = await _workoutItemBox!.add(item);
+        await _firestore.collection(workoutItemBoxName).doc(key.toString()).set(item.toJson());
         print('Saved BaseRow WorkoutDataItem: $item');
       }
       print('All base row items saved. Current box contents: ${_workoutItemBox!.values.toList()}');
@@ -168,7 +170,8 @@ class HiveService {
       }
       if (_workoutItemBox == null) return;
       for (var item in converted) {
-        await _workoutItemBox!.add(item);
+        final key = await _workoutItemBox!.add(item);
+        await _firestore.collection(workoutItemBoxName).doc(key.toString()).set(item.toJson());
         print('Saved AdvancedRow WorkoutDataItem: $item');
       }
       print('All advanced row items saved. Current box contents: ${_workoutItemBox!.values.toList()}');
@@ -196,6 +199,7 @@ class HiveService {
       );
       if (key != null) {
         await _workoutItemBox!.delete(key);
+        await _firestore.collection(workoutItemBoxName).doc(key.toString()).delete();
         print('Deleted WorkoutDataItem: $item');
       } else {
         print('WorkoutDataItem not found: $item');
@@ -210,7 +214,8 @@ class HiveService {
       if (_exerciseNameBox == null || _removedDefaultExerciseNameBox == null) return;
       for (String name in defaultExerciseNames) {
         if (!_exerciseNameBox!.values.contains(name) && !_removedDefaultExerciseNameBox!.values.contains(name)) {
-          await _exerciseNameBox!.add(name);
+          final key = await _exerciseNameBox!.add(name);
+          await _firestore.collection(exerciseNameBoxName).doc(key.toString()).set({'name': name});
           print('Added default exercise name: $name');
         }
       }
@@ -234,7 +239,8 @@ class HiveService {
     try {
       if (_exerciseNameBox == null) return;
       if (!_exerciseNameBox!.values.contains(name)) {
-        await _exerciseNameBox!.add(name);
+        final key = await _exerciseNameBox!.add(name);
+        await _firestore.collection(exerciseNameBoxName).doc(key.toString()).set({'name': name});
         print('Added exercise name: $name');
       } else {
         print('Exercise name already exists: $name');
@@ -250,6 +256,7 @@ class HiveService {
       final key = _exerciseNameBox!.keys.firstWhere((k) => _exerciseNameBox!.get(k) == name, orElse: () => null);
       if (key != null) {
         await _exerciseNameBox!.delete(key);
+        await _firestore.collection(exerciseNameBoxName).doc(key.toString()).delete();
         print('Deleted exercise name: $name');
         await _addRemovedDefaultExerciseName(name);
       } else {
@@ -264,7 +271,8 @@ class HiveService {
     try {
       if (_removedDefaultExerciseNameBox == null) return;
       if (!_removedDefaultExerciseNameBox!.values.contains(name)) {
-        await _removedDefaultExerciseNameBox!.add(name);
+        final key = await _removedDefaultExerciseNameBox!.add(name);
+        await _firestore.collection(removedDefaultExerciseNameBoxName).doc(key.toString()).set({'name': name});
         print('Tracked removed default exercise name: $name');
       }
     } catch (e) {
