@@ -1,3 +1,5 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:hive/hive.dart';
 import 'package:rpe_strength/src/Utils/Util.dart';
 import 'package:rpe_strength/src/database/models/workout_data_item.dart';
@@ -14,11 +16,75 @@ class HiveService {
   Box<WorkoutDataItem>? _workoutItemBox;
   Box<String>? _exerciseNameBox;
   Box<String>? _removedDefaultExerciseNameBox;
+  final DatabaseReference _firebaseDatabaseRef = FirebaseDatabase.instance.ref();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  HiveService() {
+    _auth.authStateChanges().listen((User? user) {
+      if (user != null) {
+        _syncWithFirebase();
+      } else {
+        _removeFirebaseListeners();
+      }
+    });
+  }
 
   Future<void> initializeBoxes() async {
     _workoutItemBox = await Hive.openBox<WorkoutDataItem>(workoutItemBoxName);
     _exerciseNameBox = await Hive.openBox<String>(exerciseNameBoxName);
     _removedDefaultExerciseNameBox = await Hive.openBox<String>(removedDefaultExerciseNameBoxName);
+    if (_auth.currentUser != null) {
+      _syncWithFirebase();
+    }
+  }
+
+  void _syncWithFirebase() {
+    _firebaseDatabaseRef.child(workoutItemBoxName).onValue.listen((event) {
+      if (event.snapshot.value != null) {
+        _syncFromFirebaseToHive(event.snapshot.value as Map<dynamic, dynamic>);
+      }
+    });
+
+    _firebaseDatabaseRef.child(exerciseNameBoxName).onValue.listen((event) {
+      if (event.snapshot.value != null) {
+        _syncFromFirebaseToHive(event.snapshot.value as Map<dynamic, dynamic>, isExercise: true);
+      }
+    });
+
+    _workoutItemBox?.watch().listen((event) {
+      _syncFromHiveToFirebase(event.key, event.value);
+    });
+
+    _exerciseNameBox?.watch().listen((event) {
+      _syncFromHiveToFirebase(event.key, event.value, isExercise: true);
+    });
+  }
+
+  void _removeFirebaseListeners() {
+    _firebaseDatabaseRef.child(workoutItemBoxName).onValue.drain();
+    _firebaseDatabaseRef.child(exerciseNameBoxName).onValue.drain();
+  }
+
+  void _syncFromFirebaseToHive(Map<dynamic, dynamic> data, {bool isExercise = false}) {
+    if (isExercise) {
+      _exerciseNameBox?.clear();
+      data.forEach((key, value) {
+        _exerciseNameBox?.put(key, value);
+      });
+    } else {
+      _workoutItemBox?.clear();
+      data.forEach((key, value) {
+        _workoutItemBox?.put(key, WorkoutDataItem.fromJson(value));
+      });
+    }
+  }
+
+  void _syncFromHiveToFirebase(dynamic key, dynamic value, {bool isExercise = false}) {
+    if (isExercise) {
+      _firebaseDatabaseRef.child(exerciseNameBoxName).update({key: value});
+    } else {
+      _firebaseDatabaseRef.child(workoutItemBoxName).update({key: (value as WorkoutDataItem).toJson()});
+    }
   }
 
   Future<void> saveWorkoutItemList(List<WorkoutDataItem> items) async {
