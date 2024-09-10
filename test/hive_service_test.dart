@@ -12,7 +12,6 @@ import 'package:rpe_strength/src/database/hive_service.dart';
 import 'hive_service_test.mocks.dart';
 
 void main() {
-  return;
   group('HiveService', () {
     late HiveService hiveService;
     late MockBox<WorkoutDataItem> mockWorkoutBox;
