@@ -13,7 +13,6 @@ class HistoryPageProvider extends ChangeNotifier {
   void _initializeProvider() async {
     await hiveProvider.fetchExerciseNames();
     selectedExercises = List.from(hiveProvider.exerciseNames);
-    print("selected Ex: $selectedExercises");
     notifyListeners();
   }
 
