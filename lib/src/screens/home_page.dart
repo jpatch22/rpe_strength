@@ -65,6 +65,13 @@ class HomePage extends StatelessWidget {
                 },
                 child: Text("Debug"),
               ),
+              SizedBox(height: 20), // Space between text and button
+              ElevatedButton(
+                onPressed: () {
+                  _clearLocalData(hiveProvider);
+                },
+                child: Text("Clear Local Data"),
+              ),
               SizedBox(height: 20), // Space between buttons
               if (user == null)
                 ElevatedButton(
@@ -119,6 +126,10 @@ class HomePage extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  void _clearLocalData(HiveProvider hiveProvider) {
+    hiveProvider.clearLocalData();
   }
 
   void saveRandTestData(HiveProvider hiveProvider) {

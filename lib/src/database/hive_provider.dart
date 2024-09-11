@@ -63,4 +63,8 @@ class HiveProvider extends ChangeNotifier {
     await _hiveService.deleteWorkoutDataItem(item);
     await fetchWorkoutDataItems();
   }
+
+  void clearLocalData() {
+    _hiveService.clearLocalData();
+  }
 }

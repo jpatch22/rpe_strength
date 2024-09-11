@@ -71,4 +71,14 @@ class WorkoutDataItem extends HiveObject {
       'id': id,
     };
   }
+
+  bool equals(WorkoutDataItem other) {
+    return weight == other.weight &&
+           numReps == other.numReps &&
+           RPE == other.RPE &&
+           numSets == other.numSets &&
+           hype == other.hype &&
+           notes == other.notes &&
+           timestamp == other.timestamp;
+  }
 }

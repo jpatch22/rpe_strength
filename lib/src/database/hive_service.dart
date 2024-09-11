@@ -19,31 +19,69 @@ class HiveService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  HiveService() {
-    _auth.authStateChanges().listen((User? user) {
-      if (user != null) {
-        _syncWithFirebase();
-      } else {
-        _removeFirebaseListeners();
-      }
-    });
+HiveService() {
+    _auth.authStateChanges().listen(_authStateChanges);
+    initializeBoxes();
+  }
+
+  void _authStateChanges(User? user) {
+    if (user != null) {
+      totalSyncWithFirebase();
+    } 
   }
 
   Future<void> initializeBoxes() async {
     _workoutItemBox = await Hive.openBox<WorkoutDataItem>(workoutItemBoxName);
     _exerciseNameBox = await Hive.openBox<String>(exerciseNameBoxName);
     _removedDefaultExerciseNameBox = await Hive.openBox<String>(removedDefaultExerciseNameBoxName);
-    if (_auth.currentUser != null) {
-      _syncWithFirebase();
+  }
+
+  Future<void> totalSyncWithFirebase() async {
+  }
+
+  Future<void> syncWorkoutItemsFirebase() async {
+    if (_auth.currentUser == null) return;
+  }
+
+  Future<void> syncExerciseNamesToFirebase() async {
+    if (_auth.currentUser == null) return;
+    
+    final userDocRef = _firestore.collection('users').doc(_auth.currentUser!.uid);
+    final exerciseCollectionRef = userDocRef.collection('exercises');
+    
+    // Retrieve Firestore exercises
+    final firestoreSnapshot = await exerciseCollectionRef.get();
+    final Map<String, String> firestoreNames = {
+      for (var doc in firestoreSnapshot.docs) doc.id: doc.data()['name'] as String
+    };
+
+    // Retrieve local exercises
+    final List<String> localNames = _exerciseNameBox!.values.toList();
+
+    // Compare and update Firestore with any new local exercises
+    for (var localName in localNames) {
+      if (!firestoreNames.containsValue(localName)) {
+        // Add new exercise name to Firestore if it doesn't exist
+        await exerciseCollectionRef.add({'name': localName});
+      }
     }
+
+    // Detect and delete Firestore entries that are no longer present locally
+    firestoreNames.forEach((docId, name) {
+      if (!localNames.contains(name)) {
+        // Delete the document from Firestore if it no longer exists locally
+        exerciseCollectionRef.doc(docId).delete();
+      }
+    });
+    
+    print('Sync completed.');
   }
 
-  void _syncWithFirebase() {
-    return;
-  }
 
-  void _removeFirebaseListeners() {
-    return;
+  void clearLocalData() {
+    _workoutItemBox?.clear();
+    _exerciseNameBox?.clear();
+    _removedDefaultExerciseNameBox?.clear();
   }
 
   Future<void> saveWorkoutItemList(List<WorkoutDataItem> items) async {
@@ -174,6 +212,7 @@ class HiveService {
         }
       }
       print('Exercise names initialized. Current box contents: ${_exerciseNameBox!.values.toList()}');
+      syncExerciseNamesToFirebase();
     } catch (e) {
       print('Error initializing exercise names: $e');
     }
@@ -198,6 +237,7 @@ class HiveService {
       } else {
         print('Exercise name already exists: $name');
       }
+      syncExerciseNamesToFirebase();
     } catch (e) {
       print('Error adding exercise name: $e');
     }
@@ -214,6 +254,7 @@ class HiveService {
       } else {
         print('Exercise name not found: $name');
       }
+      syncExerciseNamesToFirebase();
     } catch (e) {
       print('Error deleting exercise name: $e');
     }
