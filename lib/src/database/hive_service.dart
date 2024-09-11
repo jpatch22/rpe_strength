@@ -26,7 +26,7 @@ HiveService() {
 
   void _authStateChanges(User? user) {
     if (user != null) {
-      totalSyncWithFirebase();
+      syncToLocal();
     } 
   }
 
@@ -36,11 +36,77 @@ HiveService() {
     _removedDefaultExerciseNameBox = await Hive.openBox<String>(removedDefaultExerciseNameBoxName);
   }
 
-  Future<void> totalSyncWithFirebase() async {
+  Future<void> totalSyncWithFirebase() async {}
+
+  Future<Map<String, WorkoutDataItem>> fetchFirestoreWorkoutData() async {
+    final userDocRef =
+        _firestore.collection('users').doc(_auth.currentUser!.uid);
+    final workoutDataCollectionRef = userDocRef.collection('workoutData');
+    final snapshot = await workoutDataCollectionRef.get();
+
+    Map<String, WorkoutDataItem> firestoreItems = {};
+    for (var doc in snapshot.docs) {
+      WorkoutDataItem item =
+          WorkoutDataItem.fromJson(doc.data() as Map<String, dynamic>);
+      firestoreItems[doc.id] = item;
+    }
+    return firestoreItems;
+  }
+
+  Future<void> syncToLocal() async {
+    // Fetch data from Firestore
+    Map<String, WorkoutDataItem> firestoreItems =
+        await fetchFirestoreWorkoutData();
+
+    // Assuming a method to get local items similarly structured
+    Map<String, WorkoutDataItem> localItems =
+        _workoutItemBox!.values.toList().asMap().cast<String, WorkoutDataItem>();
+
+    // Update local storage with Firestore data
+    for (var id in firestoreItems.keys) {
+      if (localItems[id] == null || localItems[id] != firestoreItems[id]) {
+        // Update or add new item locally
+        if (firestoreItems[id] != null) {
+          _workoutItemBox!.put(id, firestoreItems[id]!);
+        }
+      }
+    }
   }
 
   Future<void> syncWorkoutItemsFirebase() async {
     if (_auth.currentUser == null) return;
+    final userDocRef = _firestore.collection('users').doc(_auth.currentUser!.uid);
+    final workoutDataCollectionRef = userDocRef.collection('workoutData');
+
+    // Retrieve Firestore workout data items
+    final firestoreSnapshot = await workoutDataCollectionRef.get();
+    final Map<String, Map<String, dynamic>> firestoreItems = {
+      for (var doc in firestoreSnapshot.docs) doc.id: doc.data()
+    };
+
+    // Retrieve local workout data items
+    final List<WorkoutDataItem> localItems = _workoutItemBox!.values.toList();
+
+    Map<String, dynamic> localSerializedItems = {
+      for (var item in localItems)
+        item.id ?? "defaultId": item.toJson()
+    };
+
+    // Add or update local items in Firestore
+    for (var localItem in localItems) {
+      if (!firestoreItems.containsKey(localItem.id) || firestoreItems[localItem.id] != localItem.toJson()) {
+        workoutDataCollectionRef.doc(localItem.id).set(localItem.toJson());
+      }
+    }
+
+    // Delete Firestore entries not present locally
+    firestoreItems.forEach((docId, data) {
+      if (!localSerializedItems.containsKey(docId)) {
+        workoutDataCollectionRef.doc(docId).delete();
+      }
+    });
+
+    print('Workout data sync completed.');
   }
 
   Future<void> syncExerciseNamesToFirebase() async {
@@ -49,16 +115,13 @@ HiveService() {
     final userDocRef = _firestore.collection('users').doc(_auth.currentUser!.uid);
     final exerciseCollectionRef = userDocRef.collection('exercises');
     
-    // Retrieve Firestore exercises
     final firestoreSnapshot = await exerciseCollectionRef.get();
     final Map<String, String> firestoreNames = {
       for (var doc in firestoreSnapshot.docs) doc.id: doc.data()['name'] as String
     };
 
-    // Retrieve local exercises
     final List<String> localNames = _exerciseNameBox!.values.toList();
 
-    // Compare and update Firestore with any new local exercises
     for (var localName in localNames) {
       if (!firestoreNames.containsValue(localName)) {
         // Add new exercise name to Firestore if it doesn't exist
@@ -95,6 +158,7 @@ HiveService() {
     } catch (e) {
       print('Error saving workout items: $e');
     }
+    syncWorkoutItemsFirebase();
   }
 
   Future<void> saveBaseRowItemList(List<RowData> rowData, String exercise) async {
@@ -129,6 +193,7 @@ HiveService() {
     } catch (e) {
       print('Error saving base row items: $e');
     }
+    syncWorkoutItemsFirebase();
   }
 
   Future<void> saveAdvancedRowItemList(
@@ -172,6 +237,7 @@ HiveService() {
     } catch (e) {
       print('Error saving advanced row items: $e');
     }
+    syncWorkoutItemsFirebase();
   }
 
   Future<List<WorkoutDataItem>> getWorkoutDataItems() async {
@@ -200,6 +266,7 @@ HiveService() {
     } catch (e) {
       print('Error deleting workout data item: $e');
     }
+    syncWorkoutItemsFirebase();
   }
 
   Future<void> initializeExerciseNames() async {

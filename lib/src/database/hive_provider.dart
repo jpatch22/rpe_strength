@@ -67,4 +67,8 @@ class HiveProvider extends ChangeNotifier {
   void clearLocalData() {
     _hiveService.clearLocalData();
   }
+
+  void pullCloudChanges() {
+    _hiveService.syncToLocal();
+  }
 }
