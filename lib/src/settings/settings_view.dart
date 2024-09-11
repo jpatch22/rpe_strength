@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:rpe_strength/src/Utils/Util.dart';
 import 'package:rpe_strength/src/providers/advanced_mode_provider.dart';
 import 'package:rpe_strength/src/providers/method_provider.dart';
+import '../database/hive_provider.dart';
 import 'settings_controller.dart';
 
 /// Displays the various settings that can be customized by the user.
@@ -89,6 +90,16 @@ class SettingsView extends StatelessWidget {
                   ],
                 );
               },
+            ),
+            const SizedBox(height: 16),
+            // Button for syncing cloud changes
+            ElevatedButton(
+              onPressed: () {
+                // Assuming you have access to HiveProvider via Provider
+                var hiveProvider = Provider.of<HiveProvider>(context, listen: false);
+                hiveProvider.pullCloudChanges();
+              },
+              child: const Text('Sync Cloud Changes'),
             ),
           ],
         ),
