@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rpe_strength/src/models/adv_row_data.dart';
+import 'package:rpe_strength/src/providers/advanced_mode_provider.dart';
 import 'package:rpe_strength/src/providers/record_page_provider.dart';
 import 'package:rpe_strength/src/widgets/row_item.dart';
 import 'package:rpe_strength/src/widgets/adv_row_item.dart';
 import 'package:rpe_strength/src/widgets/custom_dropdown_search.dart';
-import '../providers/advanced_mode_provider.dart';
 
 class RecordPage extends StatelessWidget {
   @override

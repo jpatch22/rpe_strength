@@ -1,0 +1,40 @@
+name: Flutter CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.22.3'  # Use a Flutter version that supports Dart >=3.4.3 <4.0.0
+
+    - name: Install Dependencies
+      run: flutter pub get
+
+    # - name: Run Tests
+      # run: flutter test
+    # Build the Flutter web project
+    - name: Build Flutter Web
+      run: flutter build web
+
+    # Install Firebase CLI
+    - name: Install Firebase CLI
+      run: npm install -g firebase-tools
+
+    # Deploy to Firebase Hosting
+    - name: Deploy to Firebase Hosting
+      run: firebase deploy --only hosting
+      env:
+        FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+

@@ -3,9 +3,9 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:rpe_strength/src/database/models/workout_data_item.dart';
 import 'package:rpe_strength/src/models/hype_level.dart';
-import '../providers/advanced_mode_provider.dart';
-import '../providers/history_page_provider.dart';
-import '../widgets/custom_dropdown_search_base.dart';
+import 'package:rpe_strength/src/providers/advanced_mode_provider.dart';
+import 'package:rpe_strength/src/providers/history_page_provider.dart';
+import 'package:rpe_strength/src/widgets/custom_dropdown_search_base.dart';
 
 class HistoryPage extends StatelessWidget {
   @override

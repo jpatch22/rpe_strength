@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../database/hive_provider.dart';
-import '../database/models/workout_data_item.dart';
+import 'package:rpe_strength/src/database/hive_provider.dart';
+import 'package:rpe_strength/src/database/models/workout_data_item.dart';
 
 class HistoryPageProvider extends ChangeNotifier {
   final HiveProvider hiveProvider;
@@ -13,7 +13,6 @@ class HistoryPageProvider extends ChangeNotifier {
   void _initializeProvider() async {
     await hiveProvider.fetchExerciseNames();
     selectedExercises = List.from(hiveProvider.exerciseNames);
-    print("selected Ex: $selectedExercises");
     notifyListeners();
   }
 

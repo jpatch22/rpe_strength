@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fuzzy/fuzzy.dart';
 import 'package:rpe_strength/src/database/hive_provider.dart';
-import '../providers/history_page_provider.dart';
+import 'package:rpe_strength/src/providers/history_page_provider.dart';
 
 class CustomDropdownSearchBase extends StatefulWidget {
   final List<String> items;

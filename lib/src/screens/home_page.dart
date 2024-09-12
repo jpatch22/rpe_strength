@@ -58,20 +58,20 @@ class HomePage extends StatelessWidget {
                   ],
                 ),
               ),
-              SizedBox(height: 20), // Space between text and button
-              ElevatedButton(
-                onPressed: () {
-                  saveRandTestData(hiveProvider);
-                },
-                child: Text("Debug"),
-              ),
-              SizedBox(height: 20), // Space between text and button
-              ElevatedButton(
-                onPressed: () {
-                  _clearLocalData(hiveProvider);
-                },
-                child: Text("Clear Local Data"),
-              ),
+              // SizedBox(height: 20), // Space between text and button
+              // ElevatedButton(
+                // onPressed: () {
+                  // saveRandTestData(hiveProvider);
+                // },
+                // child: Text("Debug"),
+              // ),
+              // SizedBox(height: 20), // Space between text and button
+              // ElevatedButton(
+                // onPressed: () {
+                  // _clearLocalData(hiveProvider);
+                // },
+                // child: Text("Clear Local Data"),
+              // ),
               SizedBox(height: 20), // Space between buttons
               if (user == null)
                 ElevatedButton(

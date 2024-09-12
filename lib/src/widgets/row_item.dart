@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/row_data.dart';
+import 'package:rpe_strength/src/models/row_data.dart';
 
 class RowItem extends StatefulWidget {
   final RowData rowData;

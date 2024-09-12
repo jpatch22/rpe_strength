@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:rpe_strength/src/Utils/Util.dart';
 import 'package:rpe_strength/src/database/hive_provider.dart';
 import 'package:rpe_strength/src/database/models/workout_data_item.dart';
 import 'package:rpe_strength/src/providers/method_provider.dart';
-import '../Utils/Util.dart';
 
 class PredictPageProvider extends ChangeNotifier {
   String? selectedExercise;
@@ -16,6 +16,7 @@ class PredictPageProvider extends ChangeNotifier {
   }
 
   void calculateEstimate(HiveProvider hiveProvider, MethodProvider methodProvider) {
+    print("Trying to calclc ex ${hiveProvider.workoutDataItems}");
     if (selectedExercise != null && rpeController.text.isNotEmpty && repsController.text.isNotEmpty) {
       final latestItem = hiveProvider.workoutDataItems
           .where((item) => item.exercise == selectedExercise)

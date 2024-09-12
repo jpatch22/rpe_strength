@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rpe_strength/src/Utils/Util.dart';
+import 'package:rpe_strength/src/database/hive_provider.dart';
 import 'package:rpe_strength/src/providers/advanced_mode_provider.dart';
 import 'package:rpe_strength/src/providers/method_provider.dart';
-import '../database/hive_provider.dart';
 import 'settings_controller.dart';
 
 /// Displays the various settings that can be customized by the user.
