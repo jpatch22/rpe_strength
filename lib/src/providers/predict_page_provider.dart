@@ -16,6 +16,7 @@ class PredictPageProvider extends ChangeNotifier {
   }
 
   void calculateEstimate(HiveProvider hiveProvider, MethodProvider methodProvider) {
+    print("trying to calculate estimate");
     if (selectedExercise != null && rpeController.text.isNotEmpty && repsController.text.isNotEmpty) {
       final latestItem = hiveProvider.workoutDataItems
           .where((item) => item.exercise == selectedExercise)
