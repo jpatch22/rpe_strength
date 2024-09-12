@@ -25,9 +25,6 @@ class _ProgressPageState extends State<ProgressPage> {
       ),
       body: Consumer<HiveProvider>(
         builder: (context, hiveProvider, child) {
-          if (hiveProvider.exerciseNames.isEmpty) {
-            return const Center(child: CircularProgressIndicator());
-          }
 
           return Column(
             children: [
