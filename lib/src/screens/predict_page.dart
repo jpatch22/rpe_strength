@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 import 'package:rpe_strength/src/Utils/Util.dart';
 import 'package:rpe_strength/src/database/hive_provider.dart';
@@ -73,7 +74,33 @@ class PredictPage extends StatelessWidget {
                   ),
                 ),
                 ElevatedButton(
-                  onPressed: () => predictPageProvider.calculateEstimate(hiveProvider, methodProvider),
+                  onPressed: (){
+                    try {
+                      // Try to calculate the estimate
+                      predictPageProvider.calculateEstimate(hiveProvider, methodProvider);
+                      if (predictPageProvider.estimatedWeight < 0) {
+                        Fluttertoast.showToast(
+                          msg: "Not enough information to calculate weight",
+                          toastLength: Toast.LENGTH_SHORT,
+                          gravity: ToastGravity.BOTTOM,
+                          timeInSecForIosWeb: 1,
+                          backgroundColor: Colors.red,
+                          textColor: Colors.white,
+                          fontSize: 16.0,
+                        );
+                      }
+                    } catch (error) {
+                      // Show a toast if an error occurs
+                      Fluttertoast.showToast(
+                        msg: "Not enough information to calculate weight",
+                        toastLength: Toast.LENGTH_SHORT,
+                        gravity: ToastGravity.BOTTOM,
+                        timeInSecForIosWeb: 1,
+                        backgroundColor: Colors.red,
+                        textColor: Colors.white,
+                        fontSize: 16.0,
+                      );
+                    }},
                   child: const Text("Calculate Estimate"),
                 ),
                 if (predictPageProvider.estimatedWeight > 0)
@@ -83,7 +110,7 @@ class PredictPage extends StatelessWidget {
                       'Estimated Weight: ${predictPageProvider.estimatedWeight.toStringAsFixed(2)}',
                       style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                     ),
-                  ),
+                    ),
               ],
             ),
           );
