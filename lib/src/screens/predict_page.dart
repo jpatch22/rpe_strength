@@ -8,6 +8,26 @@ import 'package:rpe_strength/src/providers/predict_page_provider.dart';
 import 'package:rpe_strength/src/widgets/custom_dropdown_search.dart';
 
 class PredictPage extends StatelessWidget {
+  void showToast(BuildContext context) {
+  final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+  final webBgColor = isDarkMode
+      ? "linear-gradient(to right, #0d47a1, #1976d2)"
+      : "linear-gradient(to right, #42a5f5, #90caf9)";
+
+  Fluttertoast.showToast(
+    msg: "Not enough information to calculate weight",
+    toastLength: Toast.LENGTH_LONG,
+    gravity: ToastGravity.TOP,
+    timeInSecForIosWeb: 1,
+    backgroundColor: isDarkMode ? Colors.blueAccent : Colors.blue,
+    textColor: isDarkMode ? Colors.white : Colors.black,
+    fontSize: 16.0,
+    webPosition: "center",
+    webBgColor: webBgColor,
+  );
+}
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -15,7 +35,8 @@ class PredictPage extends StatelessWidget {
         title: Text('Predict Weight'),
       ),
       body: Consumer3<PredictPageProvider, HiveProvider, MethodProvider>(
-        builder: (context, predictPageProvider, hiveProvider, methodProvider, child) {
+        builder: (context, predictPageProvider, hiveProvider, methodProvider,
+            child) {
           return SingleChildScrollView(
             child: Column(
               children: <Widget>[
@@ -26,7 +47,8 @@ class PredictPage extends StatelessWidget {
                       width: 300,
                       child: CustomDropdownSearch(
                         items: hiveProvider.exerciseNames,
-                        onChanged: (value) => predictPageProvider.setSelectedExercise(value),
+                        onChanged: (value) =>
+                            predictPageProvider.setSelectedExercise(value),
                         selectedItem: predictPageProvider.selectedExercise,
                         labelText: "",
                         hintText: "Search and select an exercise",
@@ -74,32 +96,16 @@ class PredictPage extends StatelessWidget {
                   ),
                 ),
                 ElevatedButton(
-                  onPressed: (){
+                  onPressed: () {
                     try {
-                      // Try to calculate the estimate
-                      predictPageProvider.calculateEstimate(hiveProvider, methodProvider);
-                      if (predictPageProvider.estimatedWeight < 0) {
-                        Fluttertoast.showToast(
-                          msg: "Not enough information to calculate weight",
-                          toastLength: Toast.LENGTH_SHORT,
-                          gravity: ToastGravity.BOTTOM,
-                          timeInSecForIosWeb: 1,
-                          backgroundColor: Colors.red,
-                          textColor: Colors.white,
-                          fontSize: 16.0,
-                        );
+                      predictPageProvider.calculateEstimate(
+                          hiveProvider, methodProvider);
+                      if (predictPageProvider.estimatedWeight <= 0) {
+                        showToast(context);
                       }
                     } catch (error) {
                       // Show a toast if an error occurs
-                      Fluttertoast.showToast(
-                        msg: "Not enough information to calculate weight",
-                        toastLength: Toast.LENGTH_SHORT,
-                        gravity: ToastGravity.BOTTOM,
-                        timeInSecForIosWeb: 1,
-                        backgroundColor: Colors.red,
-                        textColor: Colors.white,
-                        fontSize: 16.0,
-                      );
+                      showToast(context);
                     }},
                   child: const Text("Calculate Estimate"),
                 ),
