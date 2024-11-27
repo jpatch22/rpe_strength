@@ -1,27 +1,56 @@
 import 'dart:math';
 
 class OneRepMaxCalculator {
-  static double epley(double weight, int reps) {
-    return weight * (1 + 0.0333 * reps);
-  }
+  // Adjust reps based on RPE
+int adjustRepsForRPE(int reps, double rpe) {
+  return reps + (10 - rpe).round();
+}
 
-  static double brzycki(double weight, int reps) {
-    return weight / (1.0278 - 0.0278 * reps);
-  }
+// Adjusted Mayhew 1-RM
+double mayhew1RM(double repWeight, int reps, double rpe) {
+  int adjustedReps = adjustRepsForRPE(reps, rpe);
+  return (100 * repWeight) / (52.2 + 41.9 * exp(-0.055 * adjustedReps));
+}
 
-  static double lombardi(double weight, int reps) {
-    return weight * pow(reps, 0.10);
-  }
+// Adjusted Wathan 1-RM
+double wathan1RM(double repWeight, int reps, double rpe) {
+  int adjustedReps = adjustRepsForRPE(reps, rpe);
+  return (100 * repWeight) / (48.8 + 53.8 * exp(-0.075 * adjustedReps));
+}
 
-  static double oconner(double weight, int reps) {
-    return weight * (1 + 0.025 * reps);
-  }
+// Helms RPE-Based 1-RM
+double helms1RM(double repWeight, int reps, double rpe) {
+  int rir = (10 - rpe).round();
+  return repWeight / (1 - (rir * 0.03));
+}
 
-  static double wathan(double weight, int reps) {
-    return (100 * weight) / (48.8 + 53.8 * exp(-0.075 * reps));
-  }
+// Barbell Medicine RPE-Based 1-RM
+double barbellMedicine1RM(double repWeight, int reps, double rpe) {
+  int rir = (10 - rpe).round();
+  return repWeight * (1 + (rir * 0.033));
+}
 
-  static double rpeBased(double weight, int reps, double rpe) {
-    return (weight * (10 - rpe)) / 0.0333;
-  }
+// Predict weight for a given 1-RM, reps, and RPE using Mayhew
+double mayhewPredictedWeight(double oneRM, int reps, double rpe) {
+  int adjustedReps = adjustRepsForRPE(reps, rpe);
+  return oneRM * (52.2 + 41.9 * exp(-0.055 * adjustedReps)) / 100;
+}
+
+// Predict weight for a given 1-RM, reps, and RPE using Wathan
+double wathanPredictedWeight(double oneRM, int reps, double rpe) {
+  int adjustedReps = adjustRepsForRPE(reps, rpe);
+  return oneRM * (48.8 + 53.8 * exp(-0.075 * adjustedReps)) / 100;
+}
+
+// Predict weight for a given 1-RM, reps, and RPE using Helms
+double helmsPredictedWeight(double oneRM, int reps, double rpe) {
+  int rir = (10 - rpe).round();
+  return oneRM * (1 - (rir * 0.03));
+}
+
+// Predict weight for a given 1-RM, reps, and RPE using Barbell Medicine
+double barbellMedicinePredictedWeight(double oneRM, int reps, double rpe) {
+  int rir = (10 - rpe).round();
+  return oneRM / (1 + (rir * 0.033));
+}
 }

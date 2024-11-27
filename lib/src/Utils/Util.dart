@@ -1,9 +1,10 @@
+import 'package:rpe_strength/src/algos/one_rep_max_calculator.dart';
 import 'package:rpe_strength/src/database/models/workout_data_item.dart';
-import 'dart:math';
 
 class Util {
   Util._();
-  static List<String> calculationMethods = ['Epley', 'Brzycki', 'Lombardi', 'O\'Conner', 'Wathan'];
+  static List<String> calculationMethods = ['Barbell Medicine', 'Mayhew', 'Wathan', 'Helms'];
+  static OneRepMaxCalculator calculator = OneRepMaxCalculator();
 
   static DateTime? parseTime(String ddmmyy) {
     if (ddmmyy.length < 6) {
@@ -22,40 +23,33 @@ class Util {
 
 
   static double calculateWeight(WorkoutDataItem item, double e1RM, String selectedMethod) {
-    double modNumReps = (item.numReps + 10 - (double.tryParse(item.RPE) ?? 11));
+    double rpe = double.tryParse(item.RPE) ?? 11;
     switch (selectedMethod) {
-      case 'Epley':
-        return e1RM / (1 + 0.0333 * modNumReps);
-      case 'Brzycki':
-        return e1RM * (1.0278 - 0.0278 * modNumReps);
-      case 'Lombardi':
-        return e1RM / pow(modNumReps, 0.10);
-      case 'O\'Conner':
-        return e1RM / (1 + 0.025 * modNumReps);
+      case 'Helms':
+        return calculator.helmsPredictedWeight(e1RM, item.numReps, rpe);
       case 'Wathan':
-        return (100 * e1RM) * (48.8 + 53.8 * exp(-0.075 * modNumReps));
-      case 'RPE-based':
-        return (item.weight * (10 - (double.tryParse(item.RPE) ?? 10.0))) / 0.0333;
+        return calculator.wathanPredictedWeight(e1RM, item.numReps, rpe);
+      case 'Mayhew':
+        return calculator.mayhewPredictedWeight(e1RM, item.numReps, rpe);
+      case 'Barbell Medicine':
+        return calculator.barbellMedicine1RM(e1RM, item.numReps, rpe);
       default:
         return item.weight; // Fallback to the actual weight if no method is selected
     }
   }
 
   static double calculate1RM(WorkoutDataItem item, String selectedMethod) {
-    double modNumReps = (item.numReps + 10 - (double.tryParse(item.RPE) ?? 11));
+    print("here $selectedMethod");
+    double rpe = double.tryParse(item.RPE) ?? 11;
     switch (selectedMethod) {
-      case 'Epley':
-        return item.weight * (1 + 0.0333 * modNumReps);
-      case 'Brzycki':
-        return item.weight / (1.0278 - 0.0278 * modNumReps);
-      case 'Lombardi':
-        return item.weight * pow(modNumReps, 0.10);
-      case 'O\'Conner':
-        return item.weight * (1 + 0.025 * modNumReps);
+      case 'Helms':
+        return calculator.helms1RM(item.weight, item.numReps, rpe);
       case 'Wathan':
-        return (100 * item.weight) / (48.8 + 53.8 * exp(-0.075 * modNumReps));
-      case 'RPE-based':
-        return (item.weight * (10 - (double.tryParse(item.RPE) ?? 10.0))) / 0.0333;
+        return calculator.wathan1RM(item.weight, item.numReps, rpe);
+      case 'Mayhew':
+        return calculator.mayhew1RM(item.weight, item.numReps, rpe);
+      case 'Barbell Medicine':
+        return calculator.barbellMedicine1RM(item.weight, item.numReps, rpe);
       default:
         return item.weight; // Fallback to the actual weight if no method is selected
     }

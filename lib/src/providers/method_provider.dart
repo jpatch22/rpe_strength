@@ -3,7 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class MethodProvider with ChangeNotifier {
   static const String _selectedMethodKey = 'selected_method';
-  String _selectedMethod = "Epley";
+  String _selectedMethod = "Helms";
 
   String get selectedMethod => _selectedMethod;
 
@@ -24,7 +24,7 @@ class MethodProvider with ChangeNotifier {
 
   Future<void> _loadSelectedMethod() async {
     final prefs = await SharedPreferences.getInstance();
-    _selectedMethod = prefs.getString(_selectedMethodKey) ?? "Epley";
+    _selectedMethod = prefs.getString(_selectedMethodKey) ?? "Helms";
     notifyListeners();
   }
 }
