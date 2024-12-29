@@ -72,7 +72,6 @@ class _ProgressPageState extends State<ProgressPage> {
                         groupedItems[item.exercise] = [item];
                       }
                     }
-                    print(groupedItems);
 
                     List<ChartSeries<WorkoutDataItem, DateTime>> seriesList =
                         [];
@@ -98,10 +97,12 @@ class _ProgressPageState extends State<ProgressPage> {
                           filteredItems[dateKey] = item;
                         }
                       }
+                      final sortedItems = filteredItems.values.toList()
+                        ..sort((a, b) => a.timestamp!.compareTo(b.timestamp!));
 
                       // Create a series using the filtered data, preserving timestamps
                       seriesList.add(LineSeries<WorkoutDataItem, DateTime>(
-                        dataSource: filteredItems.values.toList(),
+                        dataSource: sortedItems,
                         xValueMapper: (WorkoutDataItem item, _) =>
                             item.timestamp!, // Use the original timestamp
                         yValueMapper: (WorkoutDataItem item, _) =>
