@@ -59,10 +59,10 @@ class _ProgressPageState extends State<ProgressPage> {
                     // Filter items based on selected exercises
                     if (selectedExercises.isNotEmpty) {
                       items = items
-                          .where((item) => selectedExercises.contains(item.exercise))
+                          .where((item) =>
+                              selectedExercises.contains(item.exercise))
                           .toList();
                     }
-
                     // Group items by exercise and create series for each exercise
                     Map<String, List<WorkoutDataItem>> groupedItems = {};
                     for (var item in items) {
@@ -73,13 +73,41 @@ class _ProgressPageState extends State<ProgressPage> {
                       }
                     }
 
-                    List<ChartSeries<WorkoutDataItem, DateTime>> seriesList = [];
+                    List<ChartSeries<WorkoutDataItem, DateTime>> seriesList =
+                        [];
+
                     groupedItems.forEach((exercise, items) {
+                      // Filter items to only include the one with the highest 1RM value for each day
+                      Map<String, WorkoutDataItem> filteredItems = {};
+                      for (var item in items) {
+                        // Group by date as a string to preserve the exact timestamps
+                        final dateKey =
+                            "${item.timestamp!.year}-${item.timestamp!.month}-${item.timestamp!.day}";
+                        final calculated1RM = Util.calculate1RM(
+                            item, methodProvider.selectedMethod);
+                        if (filteredItems.containsKey(dateKey)) {
+                          final existing1RM = Util.calculate1RM(
+                              filteredItems[dateKey]!,
+                              methodProvider.selectedMethod);
+                          if (calculated1RM > existing1RM) {
+                            filteredItems[dateKey] =
+                                item; // Replace with the higher 1RM value
+                          }
+                        } else {
+                          filteredItems[dateKey] = item;
+                        }
+                      }
+                      final sortedItems = filteredItems.values.toList()
+                        ..sort((a, b) => a.timestamp!.compareTo(b.timestamp!));
+
+                      // Create a series using the filtered data, preserving timestamps
                       seriesList.add(LineSeries<WorkoutDataItem, DateTime>(
-                        dataSource: items,
-                        xValueMapper: (WorkoutDataItem item, _) => item.timestamp!,
+                        dataSource: sortedItems,
+                        xValueMapper: (WorkoutDataItem item, _) =>
+                            item.timestamp!, // Use the original timestamp
                         yValueMapper: (WorkoutDataItem item, _) =>
-                            Util.calculate1RM(item, methodProvider.selectedMethod),
+                            Util.calculate1RM(
+                                item, methodProvider.selectedMethod),
                         name: exercise,
                         markerSettings: MarkerSettings(
                           isVisible: true,
@@ -87,6 +115,8 @@ class _ProgressPageState extends State<ProgressPage> {
                         ),
                       ));
                     });
+
+
 
                     if (seriesList.isEmpty) {
                       return const Center(child: Text('No workout data available'));
