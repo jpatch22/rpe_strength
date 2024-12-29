@@ -72,6 +72,11 @@ class WorkoutDataItem extends HiveObject {
     };
   }
 
+  @override
+  String toString() {
+    return 'WorkoutDataItem(Ex: $exercise, time: $timestamp)';
+  }
+
   bool equals(WorkoutDataItem other) {
     return weight == other.weight &&
            numReps == other.numReps &&
