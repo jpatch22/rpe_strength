@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:rpe_strength/src/Utils/Util.dart';
 import 'package:rpe_strength/src/database/hive_provider.dart';
 import 'package:rpe_strength/src/providers/method_provider.dart';
+import 'package:rpe_strength/src/providers/series_vis_provider.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:rpe_strength/src/database/models/workout_data_item.dart';
@@ -14,11 +15,12 @@ class ProgressPage extends StatefulWidget {
 
 class _ProgressPageState extends State<ProgressPage> {
   List<String> selectedExercises = [];
-  Map<String, bool> seriesVisibility = {}; // Track visibility of each series
+  // Map<String, bool> seriesVisibility = {}; // Track visibility of each series
 
   @override
   Widget build(BuildContext context) {
     final methodProvider = Provider.of<MethodProvider>(context);
+    final seriesVisProvider =  Provider.of<SeriesVisibilityProvider>(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -100,12 +102,10 @@ class _ProgressPageState extends State<ProgressPage> {
                           isVisible: true,
                           shape: DataMarkerType.circle,
                         ),
+                        isVisible: seriesVisProvider.seriesVisibility[exercise] == true
                       ));
 
-                      // Initialize visibility map for this exercise
-                      seriesVisibility[exercise] = true;
                     });
-                    print("Starter: $seriesVisibility");
 
                     if (seriesList.isEmpty) {
                       return const Center(child: Text('No workout data available'));
@@ -126,18 +126,16 @@ class _ProgressPageState extends State<ProgressPage> {
                                 // Get the series name from the tapped legend item
                                 String seriesName = args.series.name ?? '';
                                 // Toggle visibility for the series
-                                seriesVisibility[seriesName] =
-                                    !(seriesVisibility[seriesName] ?? true);
+                                seriesVisProvider.seriesVisibility[seriesName] =
+                                    !(seriesVisProvider.seriesVisibility[seriesName] ?? true);
                               });
 
                               // Log currently visible series
-                              print('Currently visible series:');
-                              seriesVisibility.forEach((seriesName, isVisible) {
+                              seriesVisProvider.seriesVisibility.forEach((seriesName, isVisible) {
                                 if (isVisible) {
                                   print('$seriesName is visible');
                                 }
                               });
-                              print("Overview: $seriesVisibility");
                             },
                             series: seriesList,
                             primaryXAxis: DateTimeAxis(),
@@ -150,7 +148,7 @@ class _ProgressPageState extends State<ProgressPage> {
                         Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: Text(
-                            'Visible Exercises: ${seriesVisibility.entries.where((entry) => entry.value).map((entry) => entry.key).join(', ')}',
+                            'Visible Exercises: ${seriesVisProvider.seriesVisibility.entries.where((entry) => entry.value).map((entry) => entry.key).join(', ')}',
                             style: TextStyle(fontSize: 16),
                           ),
                         ),

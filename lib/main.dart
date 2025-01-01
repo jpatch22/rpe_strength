@@ -9,6 +9,7 @@ import 'package:rpe_strength/src/providers/method_provider.dart';
 import 'package:rpe_strength/src/providers/predict_page_provider.dart';
 import 'package:rpe_strength/src/providers/record_page_provider.dart';
 import 'package:rpe_strength/src/providers/history_page_provider.dart';
+import 'package:rpe_strength/src/providers/series_vis_provider.dart';
 import 'package:rpe_strength/src/providers/shown_exercises_provider.dart';
 import 'src/app.dart';
 import 'src/settings/settings_controller.dart';
@@ -51,14 +52,21 @@ void main() async {
         ChangeNotifierProvider(create: (_) => MethodProvider()),
         ChangeNotifierProvider(create: (_) => PredictPageProvider()),
         ChangeNotifierProvider(create: (_) => AuthService()),
-        ChangeNotifierProvider(create: (_) => ShownExercisesProvider()),
+        ChangeNotifierProvider(
+            create: (_) => SeriesVisibilityProvider(defaultVisibility: {
+                  "Bench Press": true,
+                  "Squat": true,
+                  "Deadlift": true
+                })),
         ChangeNotifierProvider(create: (context) {
           final provider = RecordPageProvider();
-          provider.initialize(Provider.of<HiveProvider>(context, listen: false));
+          provider
+              .initialize(Provider.of<HiveProvider>(context, listen: false));
           return provider;
         }),
         ChangeNotifierProvider(create: (context) {
-          final provider = HistoryPageProvider(Provider.of<HiveProvider>(context, listen: false));
+          final provider = HistoryPageProvider(
+              Provider.of<HiveProvider>(context, listen: false));
           return provider;
         }),
       ],
