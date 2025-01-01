@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:rpe_strength/src/Utils/Util.dart';
 import 'package:rpe_strength/src/database/hive_provider.dart';
 import 'package:rpe_strength/src/providers/method_provider.dart';
-import 'package:rpe_strength/src/providers/series_vis_provider.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:rpe_strength/src/database/models/workout_data_item.dart';
@@ -15,12 +14,10 @@ class ProgressPage extends StatefulWidget {
 
 class _ProgressPageState extends State<ProgressPage> {
   List<String> selectedExercises = [];
-  // Map<String, bool> seriesVisibility = {}; // Track visibility of each series
 
   @override
   Widget build(BuildContext context) {
     final methodProvider = Provider.of<MethodProvider>(context);
-    final seriesVisProvider =  Provider.of<SeriesVisibilityProvider>(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -102,9 +99,8 @@ class _ProgressPageState extends State<ProgressPage> {
                           isVisible: true,
                           shape: DataMarkerType.circle,
                         ),
-                        isVisible: seriesVisProvider.seriesVisibility[exercise] == true
+                        isVisible: hiveProvider.seriesVisibility[exercise] == true,
                       ));
-
                     });
 
                     if (seriesList.isEmpty) {
@@ -125,16 +121,8 @@ class _ProgressPageState extends State<ProgressPage> {
                               setState(() {
                                 // Get the series name from the tapped legend item
                                 String seriesName = args.series.name ?? '';
-                                // Toggle visibility for the series
-                                seriesVisProvider.seriesVisibility[seriesName] =
-                                    !(seriesVisProvider.seriesVisibility[seriesName] ?? true);
-                              });
-
-                              // Log currently visible series
-                              seriesVisProvider.seriesVisibility.forEach((seriesName, isVisible) {
-                                if (isVisible) {
-                                  print('$seriesName is visible');
-                                }
+                                // Toggle visibility for the series using HiveProvider
+                                hiveProvider.toggleSeriesVisibility(seriesName);
                               });
                             },
                             series: seriesList,
@@ -142,14 +130,6 @@ class _ProgressPageState extends State<ProgressPage> {
                             primaryYAxis: NumericAxis(
                               title: AxisTitle(text: '1RM Weight'),
                             ),
-                          ),
-                        ),
-                        // Display the list of visible series
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            'Visible Exercises: ${seriesVisProvider.seriesVisibility.entries.where((entry) => entry.value).map((entry) => entry.key).join(', ')}',
-                            style: TextStyle(fontSize: 16),
                           ),
                         ),
                       ],
