@@ -39,7 +39,6 @@ class Util {
   }
 
   static double calculate1RM(WorkoutDataItem item, String selectedMethod) {
-    print("here $selectedMethod");
     double rpe = double.tryParse(item.RPE) ?? 11;
     switch (selectedMethod) {
       case 'Helms':

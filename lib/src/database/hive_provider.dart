@@ -5,6 +5,12 @@ import 'package:rpe_strength/src/models/adv_row_data.dart';
 import 'package:rpe_strength/src/models/row_data.dart';
 
 class HiveProvider extends ChangeNotifier {
+  HiveProvider({Map<String, bool>? defaultVisibility}) {
+    if (defaultVisibility != null) {
+      _seriesVisibility = defaultVisibility;
+    }
+    _initializeData();
+  }
   final HiveService _hiveService = HiveService();
 
   List<String> _exerciseNames = [];
@@ -13,9 +19,8 @@ class HiveProvider extends ChangeNotifier {
   List<WorkoutDataItem> _workoutDataItems = [];
   List<WorkoutDataItem> get workoutDataItems => _workoutDataItems;
 
-  HiveProvider() {
-    _initializeData();
-  }
+  Map<String, bool> _seriesVisibility = {};
+  Map<String, bool> get seriesVisibility => _seriesVisibility;
 
   Future<void> _initializeData() async {
     await _hiveService.initializeBoxes();
@@ -37,11 +42,19 @@ class HiveProvider extends ChangeNotifier {
   Future<void> addExerciseName(String name) async {
     await _hiveService.addExerciseName(name);
     await fetchExerciseNames();
+    
+    // Add the new exercise to visibility map
+    _seriesVisibility[name] = true; // Default to visible
+    notifyListeners(); // Notify listeners about the visibility change
   }
 
   Future<void> deleteExerciseName(String name) async {
     await _hiveService.deleteExerciseName(name);
     await fetchExerciseNames();
+    
+    // Remove the exercise from visibility map
+    _seriesVisibility.remove(name);
+    notifyListeners(); // Notify listeners about the visibility change
   }
 
   Future<void> saveWorkoutItemList(List<WorkoutDataItem> items) async {
@@ -62,6 +75,13 @@ class HiveProvider extends ChangeNotifier {
   Future<void> deleteWorkoutDataItem(WorkoutDataItem item) async {
     await _hiveService.deleteWorkoutDataItem(item);
     await fetchWorkoutDataItems();
+  }
+
+  void toggleSeriesVisibility(String exercise) {
+    if (_seriesVisibility.containsKey(exercise)) {
+      _seriesVisibility[exercise] = !(_seriesVisibility[exercise] ?? true);
+      notifyListeners(); // Notify listeners about the change
+    }
   }
 
   void clearLocalData() {

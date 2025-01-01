@@ -25,18 +25,17 @@ class _ProgressPageState extends State<ProgressPage> {
       ),
       body: Consumer<HiveProvider>(
         builder: (context, hiveProvider, child) {
-
           return Column(
             children: [
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: SizedBox(
-                  width: 200, // Set a fixed width for the dropdown
+                  width: 200,
                   child: DropdownButton<String>(
                     value: methodProvider.selectedMethod,
                     onChanged: (newMethod) {
                       methodProvider.setSelectedMethod(newMethod!);
-                      setState(() {}); // Rebuild chart when the method changes
+                      setState(() {});
                     },
                     items: Util.calculationMethods.map((String method) {
                       return DropdownMenuItem<String>(
@@ -44,26 +43,22 @@ class _ProgressPageState extends State<ProgressPage> {
                         child: Text(method),
                       );
                     }).toList(),
-                    isExpanded: true, // Keep this for full width within the box
+                    isExpanded: true,
                   ),
                 ),
-
               ),
               Expanded(
                 child: ValueListenableBuilder(
                   valueListenable: Hive.box<WorkoutDataItem>('workoutDataBox').listenable(),
                   builder: (context, Box<WorkoutDataItem> box, _) {
-                    // Fetch and filter workout data items
                     var items = box.values.toList();
 
-                    // Filter items based on selected exercises
                     if (selectedExercises.isNotEmpty) {
                       items = items
-                          .where((item) =>
-                              selectedExercises.contains(item.exercise))
+                          .where((item) => selectedExercises.contains(item.exercise))
                           .toList();
                     }
-                    // Group items by exercise and create series for each exercise
+
                     Map<String, List<WorkoutDataItem>> groupedItems = {};
                     for (var item in items) {
                       if (groupedItems.containsKey(item.exercise)) {
@@ -73,25 +68,19 @@ class _ProgressPageState extends State<ProgressPage> {
                       }
                     }
 
-                    List<ChartSeries<WorkoutDataItem, DateTime>> seriesList =
-                        [];
+                    List<ChartSeries<WorkoutDataItem, DateTime>> seriesList = [];
 
                     groupedItems.forEach((exercise, items) {
-                      // Filter items to only include the one with the highest 1RM value for each day
                       Map<String, WorkoutDataItem> filteredItems = {};
                       for (var item in items) {
-                        // Group by date as a string to preserve the exact timestamps
                         final dateKey =
                             "${item.timestamp!.year}-${item.timestamp!.month}-${item.timestamp!.day}";
-                        final calculated1RM = Util.calculate1RM(
-                            item, methodProvider.selectedMethod);
+                        final calculated1RM = Util.calculate1RM(item, methodProvider.selectedMethod);
                         if (filteredItems.containsKey(dateKey)) {
                           final existing1RM = Util.calculate1RM(
-                              filteredItems[dateKey]!,
-                              methodProvider.selectedMethod);
+                              filteredItems[dateKey]!, methodProvider.selectedMethod);
                           if (calculated1RM > existing1RM) {
-                            filteredItems[dateKey] =
-                                item; // Replace with the higher 1RM value
+                            filteredItems[dateKey] = item;
                           }
                         } else {
                           filteredItems[dateKey] = item;
@@ -100,38 +89,50 @@ class _ProgressPageState extends State<ProgressPage> {
                       final sortedItems = filteredItems.values.toList()
                         ..sort((a, b) => a.timestamp!.compareTo(b.timestamp!));
 
-                      // Create a series using the filtered data, preserving timestamps
                       seriesList.add(LineSeries<WorkoutDataItem, DateTime>(
                         dataSource: sortedItems,
-                        xValueMapper: (WorkoutDataItem item, _) =>
-                            item.timestamp!, // Use the original timestamp
+                        xValueMapper: (WorkoutDataItem item, _) => item.timestamp!,
                         yValueMapper: (WorkoutDataItem item, _) =>
-                            Util.calculate1RM(
-                                item, methodProvider.selectedMethod),
+                            Util.calculate1RM(item, methodProvider.selectedMethod),
                         name: exercise,
                         markerSettings: MarkerSettings(
                           isVisible: true,
                           shape: DataMarkerType.circle,
                         ),
+                        isVisible: hiveProvider.seriesVisibility[exercise] == true,
                       ));
                     });
-
-
 
                     if (seriesList.isEmpty) {
                       return const Center(child: Text('No workout data available'));
                     }
 
-                    // Build the chart with the updated series
-                    return SfCartesianChart(
-                      title: ChartTitle(text: 'e1RM Progress'),
-                      legend: Legend(isVisible: true),
-                      tooltipBehavior: TooltipBehavior(enable: true),
-                      series: seriesList,
-                      primaryXAxis: DateTimeAxis(),
-                      primaryYAxis: NumericAxis(
-                        title: AxisTitle(text: '1RM Weight'),
-                      ),
+                    return Column(
+                      children: [
+                        Expanded(
+                          child: SfCartesianChart(
+                            title: ChartTitle(text: 'e1RM Progress'),
+                            legend: Legend(
+                              isVisible: true,
+                              toggleSeriesVisibility: true,
+                            ),
+                            tooltipBehavior: TooltipBehavior(enable: true),
+                            onLegendTapped: (LegendTapArgs args) {
+                              setState(() {
+                                // Get the series name from the tapped legend item
+                                String seriesName = args.series.name ?? '';
+                                // Toggle visibility for the series using HiveProvider
+                                hiveProvider.toggleSeriesVisibility(seriesName);
+                              });
+                            },
+                            series: seriesList,
+                            primaryXAxis: DateTimeAxis(),
+                            primaryYAxis: NumericAxis(
+                              title: AxisTitle(text: '1RM Weight'),
+                            ),
+                          ),
+                        ),
+                      ],
                     );
                   },
                 ),

@@ -44,7 +44,13 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => HiveProvider()),
+        ChangeNotifierProvider(
+            create: (_) => HiveProvider(defaultVisibility: {
+                  "Bench Press": true,
+                  "Squat": true,
+                  "Deadlift": true
+
+            })),
         ChangeNotifierProvider(create: (_) => settingsController),
         ChangeNotifierProvider(create: (_) => AdvancedModeProvider()),
         ChangeNotifierProvider(create: (_) => MethodProvider()),
@@ -52,11 +58,13 @@ void main() async {
         ChangeNotifierProvider(create: (_) => AuthService()),
         ChangeNotifierProvider(create: (context) {
           final provider = RecordPageProvider();
-          provider.initialize(Provider.of<HiveProvider>(context, listen: false));
+          provider
+              .initialize(Provider.of<HiveProvider>(context, listen: false));
           return provider;
         }),
         ChangeNotifierProvider(create: (context) {
-          final provider = HistoryPageProvider(Provider.of<HiveProvider>(context, listen: false));
+          final provider = HistoryPageProvider(
+              Provider.of<HiveProvider>(context, listen: false));
           return provider;
         }),
       ],
