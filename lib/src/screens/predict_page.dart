@@ -5,6 +5,8 @@ import 'package:provider/provider.dart';
 import 'package:rpe_strength/src/Utils/Util.dart';
 import 'package:rpe_strength/src/database/hive_provider.dart';
 import 'package:rpe_strength/src/database/models/workout_data_item.dart';
+import 'package:rpe_strength/src/models/hype_level.dart';
+import 'package:rpe_strength/src/providers/advanced_mode_provider.dart';
 import 'package:rpe_strength/src/providers/method_provider.dart';
 import 'package:rpe_strength/src/providers/predict_page_provider.dart';
 import 'package:rpe_strength/src/widgets/custom_dropdown_search.dart';
@@ -39,6 +41,8 @@ class PredictPage extends StatelessWidget {
       body: Consumer3<PredictPageProvider, HiveProvider, MethodProvider>(
         builder: (context, predictPageProvider, hiveProvider, methodProvider,
             child) {
+          final advancedModeProvider = Provider.of<AdvancedModeProvider>(context);
+
           return SingleChildScrollView(
             child: Column(
               children: <Widget>[
@@ -121,12 +125,28 @@ class PredictPage extends StatelessWidget {
                     ),
                   ),
                 const Divider(height: 20), // Separator for visual clarity
-                // Add ListView at the bottom
+                // Workout Data Section
                 Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    'Workout Data',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Workout Data',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      Row(
+                        children: [
+                          Text('Advanced Mode'),
+                          Switch(
+                            value: advancedModeProvider.showAdvanced,
+                            onChanged: (value) {
+                              advancedModeProvider.setAdvancedMode(value);
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
                 SizedBox(
@@ -136,6 +156,20 @@ class PredictPage extends StatelessWidget {
                         Hive.box<WorkoutDataItem>('workoutDataBox').listenable(),
                     builder: (context, Box<WorkoutDataItem> box, _) {
                       var items = box.values.toList();
+
+                      // Filter items to match selected exercise
+                      items = items.where((item) {
+                        return predictPageProvider.selectedExercise == null ||
+                            predictPageProvider.selectedExercise == item.exercise;
+                      }).toList();
+
+                      // Sort items by timestamp (descending)
+                      items.sort((a, b) {
+                        if (a.timestamp == null && b.timestamp == null) return 0;
+                        if (a.timestamp == null) return 1;
+                        if (b.timestamp == null) return -1;
+                        return b.timestamp!.compareTo(a.timestamp!);
+                      });
 
                       if (items.isEmpty) {
                         return Center(
@@ -149,8 +183,11 @@ class PredictPage extends StatelessWidget {
                           WorkoutDataItem item = items[index];
                           return ListTile(
                             title: Text('Exercise: ${item.exercise}'),
-                            subtitle: Text(
-                                'Reps: ${item.numReps}, Weight: ${item.weight}, RPE: ${item.RPE}'),
+                            subtitle: advancedModeProvider.showAdvanced
+                                ? Text(
+                                    'Reps: ${item.numReps}, Weight: ${item.weight}, RPE: ${item.RPE}, Sets: ${item.numSets}, Hype: ${HypeLevel.fromOrdinal(item.hype).name}, Notes: ${item.notes}')
+                                : Text(
+                                    'Reps: ${item.numReps}, Weight: ${item.weight}, RPE: ${item.RPE}'),
                             trailing: Text(
                               'Time: ${item.timestamp?.toLocal().toString().substring(0, 16) ?? "No timestamp"}',
                             ),
