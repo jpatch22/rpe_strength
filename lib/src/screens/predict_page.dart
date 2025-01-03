@@ -32,6 +32,44 @@ class PredictPage extends StatelessWidget {
     );
   }
 
+  List<WorkoutDataItem> sortItems(
+    List<WorkoutDataItem> items,
+    String? targetExercise,
+    String targetRPE,
+    String targetReps,
+  ) {
+    final targetRPEValue = Util.parseRPE(targetRPE);
+    final targetRepsValue = int.tryParse(targetReps) ?? 10;
+
+    // Filter by exercise
+    items = items.where((item) {
+      return targetExercise == null || item.exercise == targetExercise;
+    }).toList();
+
+    // Sort by reps closeness, RPE closeness, and timestamp
+    items.sort((a, b) {
+      // 1. Sort by rep closeness
+      int repDiffA = (a.numReps - targetRepsValue).abs();
+      int repDiffB = (b.numReps - targetRepsValue).abs();
+      int repComparison = repDiffA.compareTo(repDiffB);
+      if (repComparison != 0) return repComparison;
+
+      // 2. Sort by RPE closeness
+      double rpeDiffA = (Util.parseRPE(a.RPE) - targetRPEValue).abs();
+      double rpeDiffB = (Util.parseRPE(b.RPE)- targetRPEValue).abs();
+      int rpeComparison = rpeDiffA.compareTo(rpeDiffB);
+      if (rpeComparison != 0) return rpeComparison;
+
+      // 3. Sort by timestamp (descending)
+      if (a.timestamp == null && b.timestamp == null) return 0;
+      if (a.timestamp == null) return 1;
+      if (b.timestamp == null) return -1;
+      return b.timestamp!.compareTo(a.timestamp!);
+    });
+
+    return items;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -124,6 +162,7 @@ class PredictPage extends StatelessWidget {
                           TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                     ),
                   ),
+
                 const Divider(height: 20), // Separator for visual clarity
                 // Workout Data Section
                 Padding(
@@ -150,26 +189,19 @@ class PredictPage extends StatelessWidget {
                   ),
                 ),
                 SizedBox(
-                  height: 300, // Define a fixed height for the ListView
+                  height: 300,
                   child: ValueListenableBuilder(
                     valueListenable:
                         Hive.box<WorkoutDataItem>('workoutDataBox').listenable(),
                     builder: (context, Box<WorkoutDataItem> box, _) {
                       var items = box.values.toList();
 
-                      // Filter items to match selected exercise
-                      items = items.where((item) {
-                        return predictPageProvider.selectedExercise == null ||
-                            predictPageProvider.selectedExercise == item.exercise;
-                      }).toList();
-
-                      // Sort items by timestamp (descending)
-                      items.sort((a, b) {
-                        if (a.timestamp == null && b.timestamp == null) return 0;
-                        if (a.timestamp == null) return 1;
-                        if (b.timestamp == null) return -1;
-                        return b.timestamp!.compareTo(a.timestamp!);
-                      });
+                      items = sortItems(
+                        items,
+                        predictPageProvider.selectedExercise,
+                        predictPageProvider.rpeController.text,
+                        predictPageProvider.repsController.text,
+                      );
 
                       if (items.isEmpty) {
                         return Center(
