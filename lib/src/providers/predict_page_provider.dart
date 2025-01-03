@@ -10,18 +10,31 @@ class PredictPageProvider extends ChangeNotifier {
   final TextEditingController repsController = TextEditingController();
   double estimatedWeight = 0;
 
+  PredictPageProvider() {
+    rpeController.addListener(_onInputChange);
+    repsController.addListener(_onInputChange);
+  }
+
+  void _onInputChange() {
+    notifyListeners(); // Notify listeners when input changes
+  }
+
   void setSelectedExercise(String? value) {
     selectedExercise = value;
     notifyListeners();
   }
 
   void calculateEstimate(HiveProvider hiveProvider, MethodProvider methodProvider) {
-    print("Trying to calclc ex ${hiveProvider.workoutDataItems}");
-    if (selectedExercise != null && rpeController.text.isNotEmpty && repsController.text.isNotEmpty) {
+    if (selectedExercise != null &&
+        rpeController.text.isNotEmpty &&
+        repsController.text.isNotEmpty) {
       final latestItem = hiveProvider.workoutDataItems
           .where((item) => item.exercise == selectedExercise)
-          .reduce((a, b) => (a.timestamp?.isAfter(b.timestamp ?? DateTime.fromMillisecondsSinceEpoch(0)) ?? false) ? a : b);
-      
+          .reduce((a, b) =>
+              (a.timestamp?.isAfter(b.timestamp ?? DateTime.fromMillisecondsSinceEpoch(0)) ?? false)
+                  ? a
+                  : b);
+
       final item = WorkoutDataItem(
         exercise: selectedExercise!,
         weight: latestItem.weight,
@@ -32,7 +45,7 @@ class PredictPageProvider extends ChangeNotifier {
       estimatedWeight = Util.calculateWeight(
         latestItem,
         Util.calculate1RM(item, methodProvider.selectedMethod),
-        methodProvider.selectedMethod
+        methodProvider.selectedMethod,
       );
       notifyListeners();
     }
@@ -40,6 +53,8 @@ class PredictPageProvider extends ChangeNotifier {
 
   @override
   void dispose() {
+    rpeController.removeListener(_onInputChange);
+    repsController.removeListener(_onInputChange);
     rpeController.dispose();
     repsController.dispose();
     super.dispose();
