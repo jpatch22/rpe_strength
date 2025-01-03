@@ -91,15 +91,18 @@ class _ProgressPageState extends State<ProgressPage> {
 
                       seriesList.add(LineSeries<WorkoutDataItem, DateTime>(
                         dataSource: sortedItems,
-                        xValueMapper: (WorkoutDataItem item, _) => item.timestamp!,
+                        xValueMapper: (WorkoutDataItem item, _) =>
+                            item.timestamp!,
                         yValueMapper: (WorkoutDataItem item, _) =>
-                            Util.calculate1RM(item, methodProvider.selectedMethod),
+                            Util.calculate1RM(
+                                item, methodProvider.selectedMethod),
                         name: exercise,
                         markerSettings: MarkerSettings(
                           isVisible: true,
                           shape: DataMarkerType.circle,
                         ),
-                        isVisible: hiveProvider.seriesVisibility[exercise] == true,
+                        isVisible:
+                            hiveProvider.seriesVisibility[exercise] == true,
                       ));
                     });
 
@@ -116,7 +119,55 @@ class _ProgressPageState extends State<ProgressPage> {
                               isVisible: true,
                               toggleSeriesVisibility: true,
                             ),
-                            tooltipBehavior: TooltipBehavior(enable: true),
+                            tooltipBehavior: TooltipBehavior(
+                              enable: true,
+                              color: Colors.black87,
+                              opacity: 0.9,
+                              duration: 2000,
+                              shouldAlwaysShow: false,
+                              builder: (dynamic data,
+                                  dynamic point,
+                                  dynamic series,
+                                  int pointIndex,
+                                  int seriesIndex) {
+                                final item = data as WorkoutDataItem;
+                                final oneRM = Util.calculate1RM(
+                                    item, methodProvider.selectedMethod);
+
+                                return Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black87,
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        series.name,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        'e1RM: ${oneRM.toStringAsFixed(1)}',
+                                        style: const TextStyle(
+                                            color: Colors.white),
+                                      ),
+                                      Text(
+                                        '${item.weight} × ${item.numReps} reps | RPE: ${item.RPE}',
+                                        style: const TextStyle(
+                                            color: Colors.white),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
                             onLegendTapped: (LegendTapArgs args) {
                               setState(() {
                                 // Get the series name from the tapped legend item
