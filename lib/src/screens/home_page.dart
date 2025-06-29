@@ -45,7 +45,7 @@ class HomePage extends StatelessWidget {
             children: [
               SizedBox(height: 50),
               const Text(
-                'RPE Zero Logging',
+                'Strength Tracking',
                 style: TextStyle(
                   fontSize: 36,
                   fontWeight: FontWeight.bold,
