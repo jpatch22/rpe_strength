@@ -1,32 +1,74 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:rpe_strength/src/Utils/Util.dart';
 import 'package:rpe_strength/src/database/hive_provider.dart';
+import 'package:rpe_strength/src/database/models/workout_data_item.dart';
+import 'package:rpe_strength/src/models/hype_level.dart';
+import 'package:rpe_strength/src/providers/advanced_mode_provider.dart';
 import 'package:rpe_strength/src/providers/method_provider.dart';
 import 'package:rpe_strength/src/providers/predict_page_provider.dart';
 import 'package:rpe_strength/src/widgets/custom_dropdown_search.dart';
 
 class PredictPage extends StatelessWidget {
   void showToast(BuildContext context) {
-  final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
-  final webBgColor = isDarkMode
-      ? "linear-gradient(to right, #0d47a1, #1976d2)"
-      : "linear-gradient(to right, #42a5f5, #90caf9)";
+    final webBgColor = isDarkMode
+        ? "linear-gradient(to right, #0d47a1, #1976d2)"
+        : "linear-gradient(to right, #42a5f5, #90caf9)";
 
-  Fluttertoast.showToast(
-    msg: "Not enough information to calculate weight",
-    toastLength: Toast.LENGTH_LONG,
-    gravity: ToastGravity.TOP,
-    timeInSecForIosWeb: 1,
-    backgroundColor: isDarkMode ? Colors.blueAccent : Colors.blue,
-    textColor: isDarkMode ? Colors.white : Colors.black,
-    fontSize: 16.0,
-    webPosition: "center",
-    webBgColor: webBgColor,
-  );
-}
+    Fluttertoast.showToast(
+      msg: "Not enough information to calculate weight",
+      toastLength: Toast.LENGTH_LONG,
+      gravity: ToastGravity.TOP,
+      timeInSecForIosWeb: 1,
+      backgroundColor: isDarkMode ? Colors.blueAccent : Colors.blue,
+      textColor: isDarkMode ? Colors.white : Colors.black,
+      fontSize: 16.0,
+      webPosition: "center",
+      webBgColor: webBgColor,
+    );
+  }
+
+  List<WorkoutDataItem> sortItems(
+    List<WorkoutDataItem> items,
+    String? targetExercise,
+    String targetRPE,
+    String targetReps,
+  ) {
+    final targetRPEValue = Util.parseRPE(targetRPE);
+    final targetRepsValue = int.tryParse(targetReps) ?? 10;
+
+    // Filter by exercise
+    items = items.where((item) {
+      return targetExercise == null || item.exercise == targetExercise;
+    }).toList();
+
+    // Sort by reps closeness, RPE closeness, and timestamp
+    items.sort((a, b) {
+      // 1. Sort by rep closeness
+      int repDiffA = (a.numReps - targetRepsValue).abs();
+      int repDiffB = (b.numReps - targetRepsValue).abs();
+      int repComparison = repDiffA.compareTo(repDiffB);
+      if (repComparison != 0) return repComparison;
+
+      // 2. Sort by RPE closeness
+      double rpeDiffA = (Util.parseRPE(a.RPE) - targetRPEValue).abs();
+      double rpeDiffB = (Util.parseRPE(b.RPE)- targetRPEValue).abs();
+      int rpeComparison = rpeDiffA.compareTo(rpeDiffB);
+      if (rpeComparison != 0) return rpeComparison;
+
+      // 3. Sort by timestamp (descending)
+      if (a.timestamp == null && b.timestamp == null) return 0;
+      if (a.timestamp == null) return 1;
+      if (b.timestamp == null) return -1;
+      return b.timestamp!.compareTo(a.timestamp!);
+    });
+
+    return items;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,6 +79,8 @@ class PredictPage extends StatelessWidget {
       body: Consumer3<PredictPageProvider, HiveProvider, MethodProvider>(
         builder: (context, predictPageProvider, hiveProvider, methodProvider,
             child) {
+          final advancedModeProvider = Provider.of<AdvancedModeProvider>(context);
+
           return SingleChildScrollView(
             child: Column(
               children: <Widget>[
@@ -104,9 +148,9 @@ class PredictPage extends StatelessWidget {
                         showToast(context);
                       }
                     } catch (error) {
-                      // Show a toast if an error occurs
                       showToast(context);
-                    }},
+                    }
+                  },
                   child: const Text("Calculate Estimate"),
                 ),
                 if (predictPageProvider.estimatedWeight > 0)
@@ -114,9 +158,77 @@ class PredictPage extends StatelessWidget {
                     padding: const EdgeInsets.all(8.0),
                     child: Text(
                       'Estimated Weight: ${predictPageProvider.estimatedWeight.toStringAsFixed(2)}',
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      style:
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                     ),
-                    ),
+                  ),
+
+                const Divider(height: 20), // Separator for visual clarity
+                // Workout Data Section
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Workout Data',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      Row(
+                        children: [
+                          Text('Advanced Mode'),
+                          Switch(
+                            value: advancedModeProvider.showAdvanced,
+                            onChanged: (value) {
+                              advancedModeProvider.setAdvancedMode(value);
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(
+                  height: 300,
+                  child: ValueListenableBuilder(
+                    valueListenable:
+                        Hive.box<WorkoutDataItem>('workoutDataBox').listenable(),
+                    builder: (context, Box<WorkoutDataItem> box, _) {
+                      var items = box.values.toList();
+
+                      items = sortItems(
+                        items,
+                        predictPageProvider.selectedExercise,
+                        predictPageProvider.rpeController.text,
+                        predictPageProvider.repsController.text,
+                      );
+
+                      if (items.isEmpty) {
+                        return Center(
+                          child: Text('No workout data available'),
+                        );
+                      }
+
+                      return ListView.builder(
+                        itemCount: items.length,
+                        itemBuilder: (context, index) {
+                          WorkoutDataItem item = items[index];
+                          return ListTile(
+                            title: Text('Exercise: ${item.exercise}'),
+                            subtitle: advancedModeProvider.showAdvanced
+                                ? Text(
+                                    'Reps: ${item.numReps}, Weight: ${item.weight}, RPE: ${item.RPE}, Sets: ${item.numSets}, Hype: ${HypeLevel.fromOrdinal(item.hype).name}, Notes: ${item.notes}')
+                                : Text(
+                                    'Reps: ${item.numReps}, Weight: ${item.weight}, RPE: ${item.RPE}'),
+                            trailing: Text(
+                              'Time: ${item.timestamp?.toLocal().toString().substring(0, 16) ?? "No timestamp"}',
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
               ],
             ),
           );

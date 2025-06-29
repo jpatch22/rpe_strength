@@ -21,6 +21,15 @@ class Util {
     }
   }
 
+  static double parseRPE(String rpe) {
+    double numRpe= 0;
+    try {
+      numRpe = double.parse(rpe);
+    } catch (e) {
+      numRpe = 10;
+    }
+    return numRpe;
+  }
 
   static double calculateWeight(WorkoutDataItem item, double e1RM, String selectedMethod) {
     double rpe = double.tryParse(item.RPE) ?? 11;
