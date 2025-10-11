@@ -12,6 +12,8 @@ import 'package:rpe_strength/src/providers/predict_page_provider.dart';
 import 'package:rpe_strength/src/widgets/custom_dropdown_search.dart';
 
 class PredictPage extends StatelessWidget {
+  const PredictPage({super.key});
+
   void showToast(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
@@ -121,7 +123,7 @@ class PredictPage extends StatelessWidget {
                   padding: const EdgeInsets.all(8.0),
                   child: TextField(
                     controller: predictPageProvider.rpeController,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: "RPE",
                       border: OutlineInputBorder(),
                     ),
@@ -132,7 +134,7 @@ class PredictPage extends StatelessWidget {
                   padding: const EdgeInsets.all(8.0),
                   child: TextField(
                     controller: predictPageProvider.repsController,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: "Reps",
                       border: OutlineInputBorder(),
                     ),
@@ -159,7 +161,7 @@ class PredictPage extends StatelessWidget {
                     child: Text(
                       'Estimated Weight: ${predictPageProvider.estimatedWeight.toStringAsFixed(2)}',
                       style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                          const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                     ),
                   ),
 
@@ -170,7 +172,7 @@ class PredictPage extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
+                      const Text(
                         'Workout Data',
                         style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
@@ -204,7 +206,7 @@ class PredictPage extends StatelessWidget {
                       );
 
                       if (items.isEmpty) {
-                        return Center(
+                        return const Center(
                           child: Text('No workout data available'),
                         );
                       }

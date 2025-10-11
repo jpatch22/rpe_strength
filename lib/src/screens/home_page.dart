@@ -8,9 +8,10 @@ import 'package:rpe_strength/src/settings/settings_controller.dart';
 import 'package:rpe_strength/src/settings/settings_view.dart';
 
 class HomePage extends StatelessWidget {
+  const HomePage({super.key});
+
   @override
   Widget build(BuildContext context) {
-    final hiveProvider = Provider.of<HiveProvider>(context, listen: false);
     final settingsController = Provider.of<SettingsController>(context, listen: false);
     final authService = Provider.of<AuthService>(context);
     final user = authService.user;
@@ -96,7 +97,7 @@ class HomePage extends StatelessWidget {
               else ...[
                 Text(
                   'Hello, ${user.displayName}',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                     shadows: [
@@ -113,7 +114,7 @@ class HomePage extends StatelessWidget {
                   onPressed: () async {
                     await authService.signOut();
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
+                      const SnackBar(
                         content: Text('Signed Out'),
                       ),
                     );
